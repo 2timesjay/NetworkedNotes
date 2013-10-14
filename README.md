@@ -1,0 +1,1 @@
+Networked Notes gives us a minimal note-taking system accompanied by an editable graph to help the users organize their thoughts into a bigger structure.
