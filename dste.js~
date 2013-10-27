@@ -30,7 +30,7 @@ addEvent(document.getElementsByClassName('note'), 'click', function () {
   localStorage.setItem(currentDoc, editable.innerHTML);
 });
 
-$('.note').keyup(function (event) {
+$('.note').dblclick(function (event) {
   //console.log("KEYUP! "+event.keyCode);
   //if(event.keyCode == 46){
   if(true){  

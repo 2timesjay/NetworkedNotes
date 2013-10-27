@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Directed Graph Editor</title>
+    <link rel="stylesheet" href="dag.css">
+<!-- Lunr head -->
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script> -->
+  <script src="jquery.js" type="text/javascript" charset="utf-8"></script>
+  <script src="mustache.js" type="text/javascript" charset="utf-8"></script>
+
+  <!-- Lunr -->
+  <script src="lunr.js" type="text/javascript" charset="utf-8"></script>
+
+  <script id="question-list-template" type="text/mustache">
+    <div>
+      <ul>
+        {{#questions}}
+          <li data-question-id="{{id}}">
+            <h2><a href="#">{{title}}</a></h2>
+          </li>
+        {{/questions}}
+      </ul>
+    </div>
+  </script>
+
+  <script id="question-view-template" type="text/mustache">
+    <div>
+      <h1>{{title}}</h1>
+      <div>{{{body}}}</div>
+    </div>
+  </script>
+
+  <script type="text/javascript" charset="utf-8">
+
+    // set up the index, specifying that we want to index the title, tags and body fields of documents.
+    //var idx
+
+    var idx= lunr(function () {
+      this.field('title', {boost: 10})
+      this.field('content')
+      this.ref('id')
+    })
+
+    $(document).ready(function () {
+
+      // load view templates
+      var questionViewTemplate = $("#question-view-template").text()
+      var questionListTemplate = $("#question-list-template").text()
+
+      var renderQuestionList = function (qs) {
+        $("#question-list-container")
+          .empty()
+          .append(Mustache.to_html(questionListTemplate, {questions: qs}))
+      }
+
+      var renderQuestionView = function (question) {
+        $("#question-view-container")
+          .empty()
+          .append(Mustache.to_html(questionViewTemplate, question))
+      }
+
+
+      profile = function (term) {
+        console.profile()
+        idx.search(term)
+        console.profileEnd()
+      }
+
+      search = function (term) {
+        console.time('search')
+        idx.search(term)
+        console.timeEnd('search')
+      }
+
+      /*$.getJSON('example_index.json', function (indexData) {
+        console.time("load")
+        idx = lunr.Index.load(indexData)
+        console.timeEnd("load")
+      })
+
+      $.getJSON('short.json', function(data){ 
+        data.map(function(article){
+          console.log(article);
+        });
+      })*/
+
+      // load the example data
+      $.getJSON('short.json', function (data) {
+
+        // format the raw json into a form that is simpler to work with
+        questions = data.map(function (raw) {
+          return {
+            id: raw.id,
+            title: raw.title,
+            body: raw.content
+          }
+        })
+
+        questions.map(function(question){idx.add(question);})
+        renderQuestionList(questions)
+        renderQuestionView(questions[0])
+
+        $('a.all').bind('click', function () {
+          renderQuestionList(questions)
+          $('input').val('')
+        })
+
+        var debounce = function (fn) {
+          var timeout
+          return function () {
+            var args = Array.prototype.slice.call(arguments),
+                ctx = this
+
+            clearTimeout(timeout)
+            timeout = setTimeout(function () {
+              fn.apply(ctx, args)
+            }, 100)
+          }
+        }
+
+        $('input').bind('keyup', debounce(function () {
+          if ($(this).val() < 2) return
+          var query = $(this).val()
+          var results = idx.search(query).map(function (result) {
+            return questions.filter(function (q) { return q.id === parseInt(result.ref, 10) })[0]
+          })
+
+          renderQuestionList(results)
+        }))
+
+        // clicking a list item displays it in the main view
+        $("#question-list-container").delegate('li', 'click', function () {
+          var li = $(this)
+          var id = li.data('question-id')
+
+          renderQuestionView(questions.filter(function (question) {
+            return (question.id == id)
+          })[0])
+        })
+      })
+    })
+
+  </script>
+
+  <style type="text/css" media="screen">
+
+    /*body {
+      background-color: #081f28;
+      color: #708284;
+      font-family: 'Helvetica Neue';
+      font-size: 16px;
+    }*/
+
+    a {
+      color: #2076c7;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+    
+    #container {  
+      width: 600px;
+      margin-left: 700px;
+    }
+    
+    #editable {
+      width: 400px;
+      height: 200px;
+      margin-left: 100px;
+    }
+
+    input {
+      width: 200px;
+      font-size: 1.4em;
+    }
+    
+    #search{
+      background-color: #081f28;
+      color: #708284;
+      font-family: 'Helvetica Neue';
+      font-size: 16px;
+      float: left;
+      width: 600px;
+    }
+    
+    #menu{
+      height:200px;
+      width:100px;
+      float:left;
+    }
+
+    /*#wrap {
+      width: 960px;
+      margin-left: auto;
+      margin-right: auto;
+    }*/
+
+    #question-list-container {
+      float: left;
+      width: 20%;
+    }
+
+    #question-view-container {
+      float: right;
+      width: 75%;
+    }
+
+    .loading {
+      color: #D11c24;
+      font-size: 0.9em;
+      border: 1px solid #D11c24;
+      padding: 10px;
+    }
+
+    .controls {
+      padding-top: 30px;
+      padding-bottom: 10px;
+      border-top: 3px dashed #708284;
+    }
+  </style>
+
+
+  </head>
+  
+
+<body>
+  <div id="wrap">
+    <header>
+      <h1>Networked Notes Prototype</h1>
+    </header>
+
+    <div id="container">
+      <div id="header">
+        <h1 style="margin-bottom:0;">Notes component</h1>
+      </div>
+
+      <div id="menu">
+        <ul id = "listbody">
+          <li><span class="note" id = "who">Who</span></li>
+          <li><span class="note" id = "what">What</span></li>
+          <li><span class="note" id = "where">Where</span></li>
+        </ul>
+      </div>
+
+      <div id="editable" contentEditable="true" desigmode="on">
+        Content goes here
+      </div>
+
+      <div>
+        <input type="button" id="clear" value="Clear changes" />
+      </div>
+    
+      <div>
+        <span>Create Document</span>
+        <input type="text" id="create" value=""/>
+      </div>
+    
+      <div id="mode-select" class="btn-group">
+        <button class="btn btn-primary active" onclick="setAppMode(MODE.EDIT)">
+          <i class="icon-pencil icon-white"></i> Edit Model
+        </button>
+        <button class="btn btn-primary" onclick="setAppMode(MODE.EVAL)">
+          <i class="icon-eye-open icon-white"></i> Evaluate Formula
+        </button>
+      </div>
+      <div id="graphic"></div>
+      
+    </div>
+
+    <div id ="search">
+      <div class="controls">
+        <input type="search" placeholder="Search..."></input>
+        <a class="all" href="#">All</a>
+      </div>
+
+      <div class="questions">
+        <div id='question-list-container'></div>
+        <div id='question-view-container'></div>
+      </div>  
+    </div>
+  </div>
+</body>
+
+  
+  <script src="h5utils.js"></script>
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+  <script src="dste.js"></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="dag.js"></script>
+  <!--<script src="dag.js"></script>-->
+</html>

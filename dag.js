@@ -6,11 +6,11 @@ var MODE = {
     appMode = MODE.EDIT;
 
 // set up SVG for D3
-var width  = 960,
-    height = 500,
+var width  = 600,
+    height = 400,
     colors = d3.scale.category10();
 
-var svg = d3.select('body')
+var svg = d3.select('#graphic')
   .append('svg')
   .attr('width', width)
   .attr('height', height);
@@ -19,12 +19,15 @@ var svg = d3.select('body')
 //  - nodes are known by 'id', not by index in array.
 //  - reflexive edges are indicated on the node (as a bold black circle).
 //  - links are always source < target; edge directions are set by 'left' and 'right'.
+
+var currentNoteList = localStorage.getItem('notelist');
+
 var nodes = [
-    {id: 0, reflexive: false, title: '0'},
-    {id: 1, reflexive: true, title: '1' },
-    {id: 2, reflexive: false, title: '2'}
+    {id: 0, reflexive: false, title: 'who'},
+    {id: 1, reflexive: true, title: 'what' },
+    {id: 2, reflexive: false, title: 'where'}
   ],
-  lastNodeId = 2,
+  lastNodeId = nodes.length-1,
   links = [
     {source: nodes[0], target: nodes[1], left: false, right: true },
     {source: nodes[1], target: nodes[2], left: false, right: true }
@@ -175,12 +178,15 @@ function restart() {
     })
     .on('mousedown', function(d) {
       if(d3.event.ctrlKey) return;
-
+    
       // select node
       mousedown_node = d;
       if(mousedown_node === selected_node) selected_node = null;
       else selected_node = mousedown_node;
       selected_link = null;
+      currentDoc = d.title;
+      editable.innerHTML = localStorage.getItem(currentDoc);
+      localStorage.setItem(currentDoc, editable.innerHTML);
 
       // reposition drag line
       drag_line
