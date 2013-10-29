@@ -3,7 +3,7 @@ var MODE = {
       EDIT: 0,
       EVAL: 1
     },
-    appMode = MODE.EDIT;
+    appMode = MODE.Edit;
 
 // set up SVG for D3
 var width  = 600,

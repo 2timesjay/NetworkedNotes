@@ -26,8 +26,17 @@
 
   <script id="question-view-template" type="text/mustache">
     <div>
-      <h1>{{title}}</h1>
+      <input type="button" class="add-control" value="Add to Canvas" />
+    </div>
+    <div>
+      <h1>{{id}}. {{title}}</h1>
       <div>{{{body}}}</div>
+    </div>
+  </script>
+  
+  <script id="add-control-template" type="text/mustache">
+    <div>
+      <input type="button" class="addToCanvas" value="Add to Canvas" />
     </div>
   </script>
 
@@ -36,6 +45,10 @@
     // set up the index, specifying that we want to index the title, tags and body fields of documents.
     //var idx
 
+    
+
+    var selectedQuestion = -1
+    
     var idx= lunr(function () {
       this.field('title', {boost: 10})
       this.field('content')
@@ -47,6 +60,7 @@
       // load view templates
       var questionViewTemplate = $("#question-view-template").text()
       var questionListTemplate = $("#question-list-template").text()
+      var addControlTemplate = $("#add-control-template").text()
 
       var renderQuestionList = function (qs) {
         $("#question-list-container")
@@ -58,6 +72,51 @@
         $("#question-view-container")
           .empty()
           .append(Mustache.to_html(questionViewTemplate, question))
+          
+        $('.add-control').bind("click", function () {
+          console.log("Clicked on Add To Canvas");
+          if(true){
+            var newDocId = selectedQuestion.id; 
+            var elem = '<li><span class="note" id ="'+newDocId+'">'+newDocId +'</span></li>'
+            console.log(elem);
+            $("#listbody").append(elem)
+            addEvent(document.getElementById(newDocId), 'click', function () {
+              //console.log(this);  
+              currentDoc = this.id;
+              editable.innerHTML = selectedQuestion.body 
+              localStorage.setItem(newDocId,editable.innerHTML)
+              //editable.innerHTML = localStorage.getItem(currentDoc);
+              $(this).focus();
+              localStorage.setItem(currentDoc, editable.innerHTML);
+            });
+            localStorage.setItem('notelist',lb.innerHTML);
+            $('#'+newDocId).dblclick(function (event) {
+              //console.log("KEYUP! "+event.keyCode);
+              //if(event.keyCode == 46){
+              if(true){  
+                var notename = $(this).id;
+                $(this).parent().remove();
+                localStorage.setItem(notename,'');
+                localStorage.setItem('notelist',lb.innerHTML);
+              }
+            });
+          }
+        //if(true){
+          console.log("creating node "+newDocId);
+          var newDocId = newDocId; 
+      // insert new node at point
+          node = {id: ++lastNodeId, reflexive: false, title : newDocId};
+          node.x = 100;
+          node.y = 100;
+          nodes.push(node);
+          restart();
+        });
+      }
+      
+      var renderAddControl = function (question) {
+        $("add-control")
+          .empty()
+          .append(Mustache.to_html(addControlTemplate, question))
       }
 
 
@@ -100,6 +159,7 @@
         questions.map(function(question){idx.add(question);})
         renderQuestionList(questions)
         renderQuestionView(questions[0])
+        //renderAddControl(questions[0])
 
         $('a.all').bind('click', function () {
           renderQuestionList(questions)
@@ -119,7 +179,7 @@
           }
         }
 
-        $('input').bind('keyup', debounce(function () {
+        $('#search-control').bind('keyup', debounce(function () {
           if ($(this).val() < 2) return
           var query = $(this).val()
           var results = idx.search(query).map(function (result) {
@@ -128,15 +188,18 @@
 
           renderQuestionList(results)
         }))
-
+        
         // clicking a list item displays it in the main view
         $("#question-list-container").delegate('li', 'click', function () {
           var li = $(this)
           var id = li.data('question-id')
 
-          renderQuestionView(questions.filter(function (question) {
+          selectedQuestion = questions.filter(function (question) {
             return (question.id == id)
-          })[0])
+          })[0]
+          renderQuestionView(selectedQuestion)
+          console.log(selectedQuestion.id)
+          //renderAddControl(selectedQuestion)
         })
       })
     })
@@ -170,6 +233,7 @@
       width: 400px;
       height: 200px;
       margin-left: 100px;
+      overflow: auto;
     }
 
     input {
@@ -181,7 +245,7 @@
       background-color: #081f28;
       color: #708284;
       font-family: 'Helvetica Neue';
-      font-size: 16px;
+      font-size: 12px;
       float: left;
       width: 600px;
     }
@@ -204,6 +268,11 @@
     }
 
     #question-view-container {
+      float: right;
+      width: 75%;
+    }
+    
+    #add-control {
       float: right;
       width: 75%;
     }
@@ -235,12 +304,15 @@
 
     <div id ="search">
       <div class="controls">
-        <input type="search" placeholder="Search..."></input>
+        <input type="search" id='search-control' placeholder="Search..."></input>
         <a class="all" href="#">All</a>
       </div>
 
       <div class="questions">
         <div id='question-list-container'></div>
+        <!--div id='add-control-container'>
+          <input type="button" class="addToCanvas" value="Add to Canvas" />
+        </div-->
         <div id='question-view-container'></div>
       </div>  
     </div>
@@ -290,8 +362,8 @@
   <script src="h5utils.js"></script>
   <script src="http://code.jquery.com/jquery-latest.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-  <script src="dste.js"></script>
   <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="dste.js"></script>
   <script src="dag.js"></script>
   <!--<script src="dag.js"></script>-->
 </html>

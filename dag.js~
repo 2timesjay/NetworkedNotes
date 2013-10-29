@@ -3,11 +3,11 @@ var MODE = {
       EDIT: 0,
       EVAL: 1
     },
-    appMode = MODE.EDIT;
+    appMode = MODE.EVAL;
 
 // set up SVG for D3
-var width  = 960,
-    height = 500,
+var width  = 600,
+    height = 400,
     colors = d3.scale.category10();
 
 var svg = d3.select('#graphic')
