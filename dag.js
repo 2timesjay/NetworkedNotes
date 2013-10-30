@@ -29,8 +29,8 @@ var nodes = [
   ],
   lastNodeId = nodes.length-1,
   links = [
-    {source: nodes[0], target: nodes[1], left: false, right: true },
-    {source: nodes[1], target: nodes[2], left: false, right: true }
+    {source: nodes[0], target: nodes[1], left: false, right: true, line: 0 },
+    {source: nodes[1], target: nodes[2], left: false, right: true, line: 0 }
   ];
 
 // init D3 force layout
@@ -118,10 +118,14 @@ function restart() {
   path = path.data(links);
 
   // update existing links
-  path.classed('selected', function(d) { return d === selected_link; })
+  path
     .style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
     .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; });
 
+  path.attr('class','link')
+    .classed('selected', function(d) { return d === selected_link; })
+    .style('stroke-width', 10)
+    .style('stroke', function(d){return d3.rgb(colors(d.line));});
 
   // add new links
   path.enter().append('svg:path')
@@ -129,6 +133,9 @@ function restart() {
     .classed('selected', function(d) { return d === selected_link; })
     .style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
     .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; })
+    .style('stroke-width', 10)
+    .style('stroke', function(d){return d3.rgb(colors(d.line));})
+    //.style('stroke-dasharray', "5,5")
     .on('mousedown', function(d) {
       if(d3.event.ctrlKey) return;
 
@@ -232,7 +239,7 @@ function restart() {
       if(link) {
         link[direction] = true;
       } else {
-        link = {source: source, target: target, left: false, right: false};
+        link = {source: source, target: target, left: false, right: false, line : 0};
         link[direction] = true;
         links.push(link);
       }
@@ -286,7 +293,7 @@ function dblclick() {
     node.x = point[0];
     node.y = point[1];
     nodes.push(node);
-    links.push({source: nodes[dblclick_node["id"]], target: nodes[lastNodeId], left: false, right: true });
+    links.push({source: nodes[dblclick_node["id"]], target: nodes[lastNodeId], left: false, right: true, line: 0 });
 
     restart();
 }
@@ -378,6 +385,13 @@ function keydown() {
         // set link direction to both left and right
         selected_link.left = true;
         selected_link.right = true;
+      }
+      restart();
+      break;
+    case 67: // C
+      if(selected_link) {
+        // Increment line membership
+        selected_link.line++
       }
       restart();
       break;
