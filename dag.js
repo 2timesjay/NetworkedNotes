@@ -106,6 +106,43 @@ function resetMouseVars() {
 
 // update force layout (called automatically each iteration)
 function tick() {
+
+  var k = 0.1;
+  var directions = octilinear;
+  //force.links().forEach(function(link){
+  path.attr('d', function(d) {
+    link = d; 
+    // discover the closest octilinear direction (dir is
+    // the orthonormal vector for that direction), and then
+    // calculate the new link by rotating around the centroid
+    // to align with that direction.)
+    var v = vec2(link.source, link.target);
+    // XXX how to stop overlapping?  nudging the edge too far is
+    // not stable...
+    // XXX this should respect friction
+    var dir = maxr(directions, function(x) {return dot(x,v)});
+    // XXX refactor me, extra lines for handling 'fixed' nodes
+    if (link.source.fixed & 1) {
+      var center = vec(link.source);
+      var ray = scale(norm(v), dir);
+      link.target.x += (center[0] + ray[0] - link.target.x) * k;
+      link.target.y += (center[1] + ray[1] - link.target.y) * k;
+    } else if (link.target.fixed & 1) {
+      var center = vec(link.target);
+      var ray = scale(norm(v), dir);
+      link.source.x += (center[0] - ray[0] - link.source.x) * k;
+      link.source.y += (center[1] - ray[1] - link.source.y) * k;
+    } else {
+      var center = centroid([vec(link.source), vec(link.target)]);
+      var ray = scale(norm(v)/2, dir);
+      link.source.x += (center[0] - ray[0] - link.source.x) * k;
+      link.source.y += (center[1] - ray[1] - link.source.y) * k;
+      link.target.x += (center[0] + ray[0] - link.target.x) * k;
+      link.target.y += (center[1] + ray[1] - link.target.y) * k;
+    }
+  });
+
+
   // draw directed edges with proper padding from node centers
   path.attr('d', function(d) {
     var deltaX = d.target.x - d.source.x,
@@ -125,6 +162,7 @@ function tick() {
   circle.attr('transform', function(d) {
     return 'translate(' + d.x + ',' + d.y + ')';
   });
+  //redraw();
 }
 
 // update graph (called when needed)
