@@ -25,9 +25,9 @@ var svg = d3.select('#graphic')
 var currentNoteList = localStorage.getItem('notelist');
 
 var nodes = [
-    {id: 0, reflexive: false, title: 'who'},
-    {id: 1, reflexive: true, title: 'what' },
-    {id: 2, reflexive: false, title: 'where'}
+    {id: 0, reflexive: false, fixed: false, title: 'who'},
+    {id: 1, reflexive: true, fixed: false, title: 'what' },
+    {id: 2, reflexive: false, fixed: false, title: 'where'}
   ],
   lastNodeId = nodes.length-1,
   links = [
@@ -174,6 +174,7 @@ function restart() {
   // update existing nodes (reflexive & selected visual states)
   circle.selectAll('circle')
     .style('fill', function(d) { return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
+    .style('fill', function(d) { return (d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() : colors(d.id); })
     .classed('reflexive', function(d) { return d.reflexive; });
 
   // add new nodes
@@ -183,6 +184,7 @@ function restart() {
     .attr('class', 'node')
     .attr('r', 12)
     .style('fill', function(d) { return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
+    .style('fill', function(d) { return (d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() : colors(d.id); })
     .style('stroke', function(d) { return d3.rgb(colors(d.id)).darker().toString(); })
     .classed('reflexive', function(d) { return d.reflexive; })
     .on('mouseover', function(d) {
@@ -303,14 +305,8 @@ function mousedown() {
 }
 
 function dblclick() {
-    console.log(dblclick_node);
-// insert new node at point
-    var point = d3.mouse(this),
-    node = {id: ++lastNodeId, reflexive: false};
-    node.x = point[0];
-    node.y = point[1];
-    nodes.push(node);
-    links.push({source: nodes[dblclick_node["id"]], target: nodes[lastNodeId], left: false, right: true, line: 0 });
+    //console.log(dblclick_node);
+    dblclick_node.fixed = !dblclick_node.fixed;
 
     restart();
 }
