@@ -248,7 +248,6 @@
       font-size: 12px;
       float: left;
       width: 600px;
-      overflow: auto;
     }
     
     #menu{
@@ -344,6 +343,9 @@
         <input type="text" id="create" value=""/>
       </div>
     
+      <div>
+        <input type = "button" id="pause" value="Pause Forces"
+      </div>
       <div id="mode-select" class="btn-group">
         <button class="btn btn-primary active" onclick="setAppMode(MODE.EDIT)">
           <i class="icon-pencil icon-white"></i> Edit Model

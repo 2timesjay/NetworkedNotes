@@ -5,6 +5,8 @@ var MODE = {
     },
     appMode = MODE.Edit;
 
+var forceOn = false;
+
 // set up SVG for D3
 var width  = 600,
     height = 400,
@@ -33,13 +35,26 @@ var nodes = [
     {source: nodes[1], target: nodes[2], left: false, right: true, line: 0 }
   ];
 
+// apply the accessor function, but in the case of
+// chaining return our closure, not the original
+function rm(f) {
+  return function() {
+    var r = f.apply(this, arguments);
+    return arguments.length ? my : r;
+  }
+}
+
 // init D3 force layout
 var force = d3.layout.force()
     .nodes(nodes)
     .links(links)
     .size([width, height])
-    .linkDistance(150)
-    .charge(-500)
+    /*.linkDistance(150)
+    .charge(-500)*/
+    .charge(-100)
+    .gravity(0.05)
+    .linkStrength(1)
+    .linkDistance(80)
     .on('tick', tick)
 
 // define arrow markers for graph links
@@ -114,6 +129,7 @@ function tick() {
 
 // update graph (called when needed)
 function restart() {
+  console.log("Called Restart");
   // path (link) group
   path = path.data(links);
 
@@ -135,7 +151,7 @@ function restart() {
     .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; })
     .style('stroke-width', 10)
     .style('stroke', function(d){return d3.rgb(colors(d.line));})
-    .style('stroke-dasharray', "5,5")
+    //.style('stroke-dasharray', "5,5")
     .on('mousedown', function(d) {
       if(d3.event.ctrlKey) return;
 
@@ -262,6 +278,7 @@ function restart() {
 
   // set the graph in motion
   force.start();
+  forceOn = true;
 }
 
 function mousedown() {
@@ -359,8 +376,39 @@ function keydown() {
   // ctrl
   if(d3.event.keyCode === 17) {
     circle.call(force.drag);
+    /*circle
+      .attr("cx", function(d) { return d.x; })
+      .attr("cy", function(d) { return d.y; })
+      .attr('transform', function(d) {
+        return 'translate(' + d.x + ',' + d.y + ')';
+      })
+      .call(d3.behavior.drag()
+        .origin(function(d) { return d; })
+        .on("drag", function(d) {
+          force
+            .nodes(d)
+            .links(links.filter(function(l){return (l.source.id == d.id || l.target.id == d.id);}));
+          d.x = d3.event.x, d.y = d3.event.y;
+          d3.select(this).attr("cx", d.x).attr("cy", d.y);
+          path.filter(function(l) { return l.source === d; }).attr("x1", d.x).attr("y1", d.y);
+          path.filter(function(l) { return l.target === d; }).attr("x2", d.x).attr("y2", d.y);
+        }));*/
     svg.classed('ctrl', true);
   }
+  
+  /*path.attr('d', function(d) {
+    var deltaX = d.target.x - d.source.x,
+        deltaY = d.target.y - d.source.y,
+        dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
+        normX = deltaX / dist,
+        normY = deltaY / dist,
+        sourcePadding = d.left ? 17 : 12,
+        targetPadding = d.right ? 17 : 12,
+        sourceX = d.source.x + (sourcePadding * normX),
+        sourceY = d.source.y + (sourcePadding * normY),
+        targetX = d.target.x - (targetPadding * normX),
+        targetY = d.target.y - (targetPadding * normY);
+  }*/
 
   if(!selected_node && !selected_link) return;
   switch(d3.event.keyCode) {
@@ -492,6 +540,18 @@ function setAppMode(newMode) {
 
   restart();
 }
+
+$('#pause').bind("click", function () {
+          if(forceOn){
+            console.log("Paused Forces");
+            force.stop();
+            forceOn = false;
+          }else if(!forceOn){
+            console.log("Unpaused Forces");
+            force.start();
+            forceOn = true;
+          }
+});
 
 // app starts here
 svg.on('mousedown', mousedown)
