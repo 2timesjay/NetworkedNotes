@@ -225,14 +225,14 @@
     }
     
     #container {  
-      width: 600px;
+      width: 550px;
       margin-left: 700px;
     }
     
     #editable {
+      float:right;
       width: 400px;
       height: 200px;
-      margin-left: 100px;
       overflow: auto;
     }
 
@@ -344,7 +344,7 @@
       </div>
     
       <div>
-        <input type = "button" id="pause" value="Pause Forces"
+        <input type = "button" id="pause" value="Pause Forces">
       </div>
       <div id="mode-select" class="btn-group">
         <button class="btn btn-primary active" onclick="setAppMode(MODE.EDIT)">
@@ -363,6 +363,7 @@
 
   
   <script src="h5utils.js"></script>
+  <script src="vector.js"></script>
   <script src="http://code.jquery.com/jquery-latest.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
   <script src="http://d3js.org/d3.v3.min.js"></script>

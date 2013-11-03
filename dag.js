@@ -51,10 +51,10 @@ var force = d3.layout.force()
     .size([width, height])
     /*.linkDistance(150)
     .charge(-500)*/
-    .charge(-100)
+    .charge(-500)
     .gravity(0.05)
     .linkStrength(1)
-    .linkDistance(80)
+    .linkDistance(150)
     .on('tick', tick)
 
 // define arrow markers for graph links
@@ -107,7 +107,7 @@ function resetMouseVars() {
 // update force layout (called automatically each iteration)
 function tick() {
 
-  var k = 0.1;
+  var k = 0.25;
   var directions = octilinear;
   //force.links().forEach(function(link){
   path.attr('d', function(d) {
@@ -178,7 +178,7 @@ function restart() {
 
   path.attr('class','link')
     .classed('selected', function(d) { return d === selected_link; })
-    .style('stroke-width', 10)
+    .style('stroke-width', 5)
     .style('stroke', function(d){return d3.rgb(colors(d.line));});
 
   // add new links
@@ -187,7 +187,7 @@ function restart() {
     .classed('selected', function(d) { return d === selected_link; })
     .style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
     .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; })
-    .style('stroke-width', 10)
+    .style('stroke-width', 5)
     .style('stroke', function(d){return d3.rgb(colors(d.line));})
     //.style('stroke-dasharray', "5,5")
     .on('mousedown', function(d) {

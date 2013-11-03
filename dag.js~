@@ -25,9 +25,9 @@ var svg = d3.select('#graphic')
 var currentNoteList = localStorage.getItem('notelist');
 
 var nodes = [
-    {id: 0, reflexive: false, title: 'who'},
-    {id: 1, reflexive: true, title: 'what' },
-    {id: 2, reflexive: false, title: 'where'}
+    {id: 0, reflexive: false, fixed: false, title: 'who'},
+    {id: 1, reflexive: true, fixed: false, title: 'what' },
+    {id: 2, reflexive: false, fixed: false, title: 'where'}
   ],
   lastNodeId = nodes.length-1,
   links = [
@@ -51,10 +51,10 @@ var force = d3.layout.force()
     .size([width, height])
     /*.linkDistance(150)
     .charge(-500)*/
-    .charge(-100)
+    .charge(-500)
     .gravity(0.05)
     .linkStrength(1)
-    .linkDistance(80)
+    .linkDistance(150)
     .on('tick', tick)
 
 // define arrow markers for graph links
@@ -106,6 +106,43 @@ function resetMouseVars() {
 
 // update force layout (called automatically each iteration)
 function tick() {
+
+  var k = 0.1;
+  var directions = octilinear;
+  //force.links().forEach(function(link){
+  path.attr('d', function(d) {
+    link = d; 
+    // discover the closest octilinear direction (dir is
+    // the orthonormal vector for that direction), and then
+    // calculate the new link by rotating around the centroid
+    // to align with that direction.)
+    var v = vec2(link.source, link.target);
+    // XXX how to stop overlapping?  nudging the edge too far is
+    // not stable...
+    // XXX this should respect friction
+    var dir = maxr(directions, function(x) {return dot(x,v)});
+    // XXX refactor me, extra lines for handling 'fixed' nodes
+    if (link.source.fixed & 1) {
+      var center = vec(link.source);
+      var ray = scale(norm(v), dir);
+      link.target.x += (center[0] + ray[0] - link.target.x) * k;
+      link.target.y += (center[1] + ray[1] - link.target.y) * k;
+    } else if (link.target.fixed & 1) {
+      var center = vec(link.target);
+      var ray = scale(norm(v), dir);
+      link.source.x += (center[0] - ray[0] - link.source.x) * k;
+      link.source.y += (center[1] - ray[1] - link.source.y) * k;
+    } else {
+      var center = centroid([vec(link.source), vec(link.target)]);
+      var ray = scale(norm(v)/2, dir);
+      link.source.x += (center[0] - ray[0] - link.source.x) * k;
+      link.source.y += (center[1] - ray[1] - link.source.y) * k;
+      link.target.x += (center[0] + ray[0] - link.target.x) * k;
+      link.target.y += (center[1] + ray[1] - link.target.y) * k;
+    }
+  });
+
+
   // draw directed edges with proper padding from node centers
   path.attr('d', function(d) {
     var deltaX = d.target.x - d.source.x,
@@ -125,6 +162,7 @@ function tick() {
   circle.attr('transform', function(d) {
     return 'translate(' + d.x + ',' + d.y + ')';
   });
+  //redraw();
 }
 
 // update graph (called when needed)
@@ -140,7 +178,7 @@ function restart() {
 
   path.attr('class','link')
     .classed('selected', function(d) { return d === selected_link; })
-    .style('stroke-width', 10)
+    .style('stroke-width', 5)
     .style('stroke', function(d){return d3.rgb(colors(d.line));});
 
   // add new links
@@ -149,7 +187,7 @@ function restart() {
     .classed('selected', function(d) { return d === selected_link; })
     .style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
     .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; })
-    .style('stroke-width', 10)
+    .style('stroke-width', 5)
     .style('stroke', function(d){return d3.rgb(colors(d.line));})
     //.style('stroke-dasharray', "5,5")
     .on('mousedown', function(d) {
@@ -174,6 +212,7 @@ function restart() {
   // update existing nodes (reflexive & selected visual states)
   circle.selectAll('circle')
     .style('fill', function(d) { return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
+    .style('fill', function(d) { return (d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() : colors(d.id); })
     .classed('reflexive', function(d) { return d.reflexive; });
 
   // add new nodes
@@ -183,6 +222,7 @@ function restart() {
     .attr('class', 'node')
     .attr('r', 12)
     .style('fill', function(d) { return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
+    .style('fill', function(d) { return (d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() : colors(d.id); })
     .style('stroke', function(d) { return d3.rgb(colors(d.id)).darker().toString(); })
     .classed('reflexive', function(d) { return d.reflexive; })
     .on('mouseover', function(d) {
@@ -303,14 +343,8 @@ function mousedown() {
 }
 
 function dblclick() {
-    console.log(dblclick_node);
-// insert new node at point
-    var point = d3.mouse(this),
-    node = {id: ++lastNodeId, reflexive: false};
-    node.x = point[0];
-    node.y = point[1];
-    nodes.push(node);
-    links.push({source: nodes[dblclick_node["id"]], target: nodes[lastNodeId], left: false, right: true, line: 0 });
+    //console.log(dblclick_node);
+    dblclick_node.fixed = !dblclick_node.fixed;
 
     restart();
 }
@@ -395,20 +429,6 @@ function keydown() {
         }));*/
     svg.classed('ctrl', true);
   }
-  
-  /*path.attr('d', function(d) {
-    var deltaX = d.target.x - d.source.x,
-        deltaY = d.target.y - d.source.y,
-        dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
-        normX = deltaX / dist,
-        normY = deltaY / dist,
-        sourcePadding = d.left ? 17 : 12,
-        targetPadding = d.right ? 17 : 12,
-        sourceX = d.source.x + (sourcePadding * normX),
-        sourceY = d.source.y + (sourcePadding * normY),
-        targetX = d.target.x - (targetPadding * normX),
-        targetY = d.target.y - (targetPadding * normY);
-  }*/
 
   if(!selected_node && !selected_link) return;
   switch(d3.event.keyCode) {
