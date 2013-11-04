@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Directed Graph Editor</title>
-    <link rel="stylesheet" href="dag.css">
+    <title>NetworkedNotes</title>
+    <link rel="stylesheet" href="networkednotes.css">
 <!-- Lunr head -->
   <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script> -->
   <script src="jquery.js" type="text/javascript" charset="utf-8"></script>
@@ -17,9 +17,21 @@
       <ul>
         {{#questions}}
           <li data-question-id="{{id}}">
-            <h2><a href="#">{{title}}</a></h2>
+            <a href="#">{{title}}</a>
           </li>
         {{/questions}}
+      </ul>
+    </div>
+  </script>
+
+  <script id="note-list-template" type="text/mustache">
+    <div>
+      <ul id="listbody">
+        {{#notes}}
+          <li>
+            <a class="note" id="{{id}}" href="#">{{title}}</a>
+          </li>
+        {{/notes}}
       </ul>
     </div>
   </script>
@@ -34,12 +46,6 @@
     </div>
   </script>
   
-  <script id="add-control-template" type="text/mustache">
-    <div>
-      <input type="button" class="addToCanvas" value="Add to Canvas" />
-    </div>
-  </script>
-
   <script type="text/javascript" charset="utf-8">
 
     // set up the index, specifying that we want to index the title, tags and body fields of documents.
@@ -60,12 +66,19 @@
       // load view templates
       var questionViewTemplate = $("#question-view-template").text()
       var questionListTemplate = $("#question-list-template").text()
-      var addControlTemplate = $("#add-control-template").text()
+      var noteListTemplate = $("#note-list-template").text()
 
       var renderQuestionList = function (qs) {
         $("#question-list-container")
           .empty()
           .append(Mustache.to_html(questionListTemplate, {questions: qs}))
+      }
+
+      var renderNoteList = function (ns) {
+        // $("#note-list-container")
+        $("#menu")
+          .empty()
+          .append(Mustache.to_html(noteListTemplate, {notes: ns}))
       }
 
       var renderQuestionView = function (question) {
@@ -75,32 +88,32 @@
           
         $('.add-control').bind("click", function () {
           console.log("Clicked on Add To Canvas");
-          if(true){
-            var newDocId = selectedQuestion.id; 
-            var elem = '<li><span class="note" id ="'+newDocId+'">'+newDocId +'</span></li>'
-            console.log(elem);
-            $("#listbody").append(elem)
-            addEvent(document.getElementById(newDocId), 'click', function () {
-              //console.log(this);  
-              currentDoc = this.id;
-              editable.innerHTML = selectedQuestion.body 
-              localStorage.setItem(newDocId,editable.innerHTML)
-              //editable.innerHTML = localStorage.getItem(currentDoc);
-              $(this).focus();
-              localStorage.setItem(currentDoc, editable.innerHTML);
-            });
-            localStorage.setItem('notelist',lb.innerHTML);
-            $('#'+newDocId).dblclick(function (event) {
-              //console.log("KEYUP! "+event.keyCode);
-              //if(event.keyCode == 46){
-              if(true){  
-                var notename = $(this).id;
-                $(this).parent().remove();
-                localStorage.setItem(notename,'');
-                localStorage.setItem('notelist',lb.innerHTML);
-              }
-            });
-          }
+          // var newDocId = selectedQuestion.title.split(' ').join('_');
+          var newDocId = selectedQuestion.id 
+          var elem = '<li><a href="#" class="note" id ="'+newDocId+'">'+newDocId +'</a></li>'
+          console.log(elem);
+          $("#listbody").append(elem)
+          addEvent(document.getElementById(newDocId), 'click', function () {
+            //console.log(this);  
+            currentDoc = this.id;
+            // editable.innerHTML = selectedQuestion.body 
+            editable.innerHTML = "What are your notes on this story?"
+            localStorage.setItem(newDocId,editable.innerHTML)
+            //editable.innerHTML = localStorage.getItem(currentDoc);
+            $(this).focus();
+            localStorage.setItem(currentDoc, editable.innerHTML);
+          });
+          localStorage.setItem('notelist',lb.innerHTML);
+          $('#'+newDocId).dblclick(function (event) {
+            //console.log("KEYUP! "+event.keyCode);
+            //if(event.keyCode == 46){
+            if(true){  
+              var notename = $(this).id;
+              $(this).parent().remove();
+              localStorage.setItem(notename,'');
+              localStorage.setItem('notelist',lb.innerHTML);
+            }
+          });
         //if(true){
           console.log("creating node "+newDocId);
           var newDocId = newDocId; 
@@ -112,13 +125,6 @@
           restart();
         });
       }
-      
-      var renderAddControl = function (question) {
-        $("add-control")
-          .empty()
-          .append(Mustache.to_html(addControlTemplate, question))
-      }
-
 
       profile = function (term) {
         console.profile()
@@ -132,21 +138,21 @@
         console.timeEnd('search')
       }
 
-      /*$.getJSON('example_index.json', function (indexData) {
-        console.time("load")
-        idx = lunr.Index.load(indexData)
-        console.timeEnd("load")
-      })
-
-      $.getJSON('short.json', function(data){ 
-        data.map(function(article){
-          console.log(article);
-        });
-      })*/
+      // var initialNotesData = {notes:[
+      //     {id:"who",title:"who"},
+      //     {id:"what",title:"what"},
+      //     {id:"where",title:"where"}
+      //   ]};
+      var initialNotesData = [
+          {id:"who",title:"who"},
+          {id:"what",title:"what"},
+          {id:"where",title:"where"}
+        ];
+      renderNoteList(initialNotesData)
 
       // load the example data
       $.getJSON('short.json', function (data) {
-
+        console.log(data);
         // format the raw json into a form that is simpler to work with
         questions = data.map(function (raw) {
           return {
@@ -159,7 +165,6 @@
         questions.map(function(question){idx.add(question);})
         renderQuestionList(questions)
         renderQuestionView(questions[0])
-        //renderAddControl(questions[0])
 
         $('a.all').bind('click', function () {
           renderQuestionList(questions)
@@ -199,7 +204,6 @@
           })[0]
           renderQuestionView(selectedQuestion)
           console.log(selectedQuestion.id)
-          //renderAddControl(selectedQuestion)
         })
       })
     })
@@ -208,12 +212,12 @@
 
   <style type="text/css" media="screen">
 
-    /*body {
+    body {
       background-color: #081f28;
       color: #708284;
       font-family: 'Helvetica Neue';
-      font-size: 16px;
-    }*/
+      font-size: 12px;
+    }
 
     a {
       color: #2076c7;
@@ -242,18 +246,20 @@
     }
     
     #search{
-      background-color: #081f28;
+/*      background-color: #081f28;
       color: #708284;
       font-family: 'Helvetica Neue';
-      font-size: 12px;
+      font-size: 12px;*/
       float: left;
       width: 600px;
+      overflow: auto;
     }
     
     #menu{
       height:200px;
       width:100px;
       float:left;
+      overflow: auto;
     }
 
     /*#wrap {
@@ -265,11 +271,15 @@
     #question-list-container {
       float: left;
       width: 20%;
+      height: 700px;
+      overflow: auto;
     }
 
     #question-view-container {
       float: right;
       width: 75%;
+      height: 700px;
+      overflow: auto;
     }
     
     #add-control {
@@ -323,11 +333,11 @@
       </div>
 
       <div id="menu">
-        <ul id = "listbody">
-          <li><span class="note" id = "who">Who</span></li>
-          <li><span class="note" id = "what">What</span></li>
-          <li><span class="note" id = "where">Where</span></li>
-        </ul>
+<!--         <ul id = "listbody">
+          <li><a href="#" class="note" id="who">Who</a></li>
+          <li><a href="#" class="note" id = "what">What</a></li>
+          <li><a href="#" class="note" id = "where">Where</a></li>
+        </ul> -->
       </div>
 
       <div id="editable" contentEditable="true" desigmode="on">

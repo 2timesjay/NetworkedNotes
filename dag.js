@@ -8,8 +8,8 @@ var MODE = {
 var forceOn = false;
 
 // set up SVG for D3
-var width  = 600,
-    height = 400,
+var width  = 500,
+    height = 300,
     colors = d3.scale.category10();
 
 var svg = d3.select('#graphic')
@@ -51,10 +51,10 @@ var force = d3.layout.force()
     .size([width, height])
     /*.linkDistance(150)
     .charge(-500)*/
-    .charge(-500)
+    .charge(-150)
     .gravity(0.05)
     .linkStrength(1)
-    .linkDistance(150)
+    .linkDistance(80)
     .on('tick', tick)
 
 // define arrow markers for graph links
