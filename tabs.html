@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>jQuery UI Tabs - Default functionality</title>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<script>
+$(function() {
+$( "#tabs" ).tabs();
+});
+</script>
+</head>
+<body>
+<div id="tabs">
+<ul>
+<li><a href="#tabs-1">Nunc tincidunt</a></li>
+<li><a href="#tabs-2">Proin dolor</a></li>
+<li><a href="#tabs-3">Aenean lacinia</a></li>
+</ul>
+	<div id="tabs-1">
+		<div id ="search">
+	    <div class="controls">
+	      <input type="search" id='search-control' placeholder="Search..."></input>
+	      <a class="all" href="#">All</a>
+	    </div>
+
+	    <div class="questions">
+	      <div id='question-list-container'></div>
+	      <!--div id='add-control-container'>
+	        <input type="button" class="addToCanvas" value="Add to Canvas" />
+	      </div-->
+	      <div id='question-view-container'></div>
+	    </div>  
+	  </div>
+	</div>
+	<div id="tabs-2">
+	  <div id="note-container">
+	    <div id="header">
+	      <h1 style="margin-bottom:0;">Note Container</h1>
+	    </div>
+
+	    <div id="menu">
+	      <ul id = "listbody">
+	        <li><a href="#" class="note" id="who">Who</a></li>
+	        <li><a href="#" class="note" id = "what">What</a></li>
+	        <li><a href="#" class="note" id = "where">Where</a></li>
+	      </ul>
+	    </div>
+
+	    <div id="editable" contentEditable="true" desigmode="on">
+	      Content goes here
+	    </div>
+
+	    <div>
+	      <input type="button" id="clear" value="Clear changes" />
+	    </div>
+	  
+	    <div>
+	      <span>Create Document</span>
+	      <input type="text" id="create" value=""/>
+	    </div>
+	  
+	    <div>
+	      <input type = "button" id="pause" value="Pause Forces">
+	    </div>
+	    <div id="mode-select" class="btn-group">
+	      <button class="btn btn-primary active" onclick="setAppMode(MODE.EDIT)">
+	        <i class="icon-pencil icon-white"></i> Edit Graph
+	      </button>
+	      <button class="btn btn-primary" onclick="setAppMode(MODE.EVAL)">
+	        <i class="icon-eye-open icon-white"></i> Edit Text
+	      </button>
+	    </div>
+	  </div>
+	</div>
+	<div id="tabs-3">
+		<p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim commodo pellentesque. Praesent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
+		<p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at, semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra justo vitae neque. Praesent blandit adipiscing velit. Suspendisse potenti. Donec mattis, pede vel pharetra blandit, magna ligula faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque. Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean vehicula velit eu tellus interdum rutrum. Maecenas commodo. Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus hendrerit hendrerit.</p>
+	</div>
+</div>
+</body>
+</html>
