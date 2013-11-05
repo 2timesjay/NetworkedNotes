@@ -1,0 +1,25 @@
+svg {
+  background-color: #FFF;
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+body {
+      background-color: #081f28;
+      color: #708284;
+      font-family: 'Helvetica Neue';
+      font-size: 12px;
+    }
+
+#heading {
+      height: 100px;
+}
+
+#graphic {
+      margin : 50px;
+      float: left;
+}

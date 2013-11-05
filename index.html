@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>NetworkedNotes</title>
-    <link rel="stylesheet" href="networkednotes.css">
+    <link rel="stylesheet" href="dag.css">
 <!-- Lunr head -->
   <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script> -->
   <script src="jquery.js" type="text/javascript" charset="utf-8"></script>
@@ -271,14 +271,16 @@
     #question-list-container {
       float: left;
       width: 20%;
-      height: 700px;
+      height: 600px;
       overflow: auto;
     }
 
     #question-view-container {
-      float: right;
+      transition: width 2s;
+      -webkit-transition: width 2s; /* Safari */
+      /*float: right;*/
       width: 75%;
-      height: 700px;
+      height: 600px;
       overflow: auto;
     }
     
@@ -307,9 +309,9 @@
 
 <body>
   <div id="wrap">
-    <header>
+<!--     <header>
       <h1>Networked Notes Prototype</h1>
-    </header>
+    </header> -->
 
 
     <div id ="search">
