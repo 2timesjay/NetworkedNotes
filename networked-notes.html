@@ -13,19 +13,58 @@
     <script src="vector.js"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="lunr.js" type="text/javascript" charset="utf-8"></script>
+    
+    <script id="question-list-template" type="text/mustache">
+      <div>
+        <ul>
+          {{#questions}}
+            <li data-question-id="{{id}}">
+              <a href="#">{{title}}</a>
+            </li>
+          {{/questions}}
+        </ul>
+      </div>
+    </script>
+
+    <script id="note-list-template" type="text/mustache">
+      <div>
+        <ul id="listbody">
+          {{#notes}}
+            <li>
+              <a class="note" id="{{id}}" href="#">{{title}}</a>
+            </li>
+          {{/notes}}
+        </ul>
+      </div>
+    </script>
+
+    <script id="question-view-template" type="text/mustache">
+      <div>
+        <input type="button" class="add-control" value="Add to Canvas" />
+      </div>
+      <div>
+        <h1>{{id}}. {{title}}</h1>
+        <div>{{{body}}}</div>
+      </div>
+    </script>
+
+
+    <script src="note-and-search-display.js" type="text/javascript" charset="utf-8"></script>
+
     <script>
       $(function() {
         $( "#tabs" ).tabs();
       });
     </script>
   </head>
+
   <body>
 <!--     <div id="heading"></div> -->
     <div id="graphic"></div>
     <div id="tabs">
       <ul>
-        <li><a href="#tabs-1">Nunc tincidunt</a></li>
-        <li><a href="#tabs-2">Proin dolor</a></li>
+        <li><a href="#tabs-1">Search and Results</a></li>
+        <li><a href="#tabs-2">Notes</a></li>
         <li><a href="#tabs-3">Aenean lacinia</a></li>
       </ul>
       <div id="tabs-1">
