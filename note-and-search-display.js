@@ -31,11 +31,18 @@ $(document).ready(function () {
       .append(Mustache.to_html(noteListTemplate, {notes: ns}))
   }
 
-  var renderQuestionView = function (question) {
-    $("#question-view-container")
+  var renderQuestionView = function (question, popupSelector) {
+    // console.log("Selector: "+popupSelector)
+    // popupSelector
+    // // $("#question-view-container")
+    //   .empty()
+    //   // .append(Mustache.to_html(questionViewTemplate, question))
+    
+    $('#pup')
       .empty()
       .append(Mustache.to_html(questionViewTemplate, question))
-      
+    popupSelector.html($('#pup'))
+
     $('.add-control').bind("click", function () {
       console.log("Clicked on Add To Canvas");
       // var newDocId = selectedQuestion.title.split(' ').join('_');
@@ -114,7 +121,7 @@ $(document).ready(function () {
 
     questions.map(function(question){idx.add(question);})
     renderQuestionList(questions)
-    renderQuestionView(questions[0])
+    // renderQuestionView(questions[0],$('#question-view-container'))
 
     $('a.all').bind('click', function () {
       renderQuestionList(questions)
@@ -143,16 +150,16 @@ $(document).ready(function () {
       console.log(results)
       renderQuestionList(results)
     }))
-    
+
     // clicking a list item displays it in the main view
-    $("#question-list-container").delegate('li', 'click', function () {
+    $("#question-list-container").delegate('li', 'mouseover', function () {
       var li = $(this)
       var id = li.data('question-id')
 
       selectedQuestion = questions.filter(function (question) {
         return (question.id == id)
       })[0]
-      renderQuestionView(selectedQuestion)
+      renderQuestionView(selectedQuestion,li.find('.pup-container'))
       console.log(selectedQuestion.id)
     })
   })
