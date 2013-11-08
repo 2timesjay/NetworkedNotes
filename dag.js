@@ -106,7 +106,7 @@ function resetMouseVars() {
 
 // update force layout (called automatically each iteration)
 function tick() {
-
+// force.on("tick", function(){}
   var k = 0.25;
   var directions = octilinear;
   //force.links().forEach(function(link){

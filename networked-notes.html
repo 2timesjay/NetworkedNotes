@@ -2,18 +2,26 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Wireframe of next NN</title>
+    <title>NN - Alpha</title>
     <link rel="stylesheet" href="networked-notes.css">
 <!-- <script src="http://code.jquery.com/jquery-latest.min.js"></script> -->
 <!--     <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" /> -->
     <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
     <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
     <script src="mustache.js" type="text/javascript" charset="utf-8"></script>
+    <script src="handlebars.js" type="text/javascript" charset="utf-8"></script>
     <script src="h5utils.js"></script>
     <script src="vector.js"></script>
-    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/d3.v3.js"></script>
     <script src="lunr.js" type="text/javascript" charset="utf-8"></script>
     
+    <script id="d3-test-template" type="text/mustache">
+      <g>
+        <circle cx="100" cy="50" r="40" stroke="black"
+        stroke-width="2" fill="red" />
+      </g>
+    </script>
+
     <script id="question-list-template" type="text/mustache">
       <div>
         <ul>
