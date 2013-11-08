@@ -42,6 +42,29 @@ var dataset = {
   ]
 };
 
+// define arrow markers for graph links
+svg.append('svg:defs').append('svg:marker')
+    .attr('id', 'end-arrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 3)
+    .attr('markerHeight', 3)
+    .attr('orient', 'auto')
+  .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('fill', '#000');
+
+svg.append('svg:defs').append('svg:marker')
+    .attr('id', 'start-arrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 4)
+    .attr('markerWidth', 3)
+    .attr('markerHeight', 3)
+    .attr('orient', 'auto')
+  .append('svg:path')
+    .attr('d', 'M10,-5L0,0L10,5')
+    .attr('fill', '#000');
+
 //Initialize a default force layout, using the nodes and edges in dataset
 var force = d3.layout.force()
            .nodes(dataset.nodes)
@@ -73,6 +96,7 @@ function canvasUpdate(){
   
   path.enter()
     .append("svg:path")
+    // .append("line")
     .style("stroke", "#ccc")
     .style("stroke-width", 3);
 
@@ -122,6 +146,7 @@ var updateNode = function() {
 //Every time the simulation "ticks", this will be called
 function tick() {
   // draw edges
+  // svg:path version
   path.attr('d', function(d) {
     var sourceX = d.source.x,
         sourceY = d.source.y,
@@ -129,6 +154,11 @@ function tick() {
         targetY = d.target.y;
     return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
   });
+  // line version
+  // path.attr("x1", function(d) { return d.source.x; })
+  //   .attr("y1", function(d) { return d.source.y; })
+  //   .attr("x2", function(d) { return d.target.x; })
+  //   .attr("y2", function(d) { return d.target.y; });
 
   //draw nodes
   circle.attr('transform', function(d) {
