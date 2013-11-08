@@ -41,7 +41,7 @@ $(document).ready(function () {
     $('#pup')
       .empty()
       .append(Mustache.to_html(questionViewTemplate, question))
-    popupSelector.html($('#pup'))
+    // popupSelector.html($('#pup'))
 
     $('.add-control').bind("click", function () {
       console.log("Clicked on Add To Canvas");
@@ -60,7 +60,6 @@ $(document).ready(function () {
         $(this).focus();
         localStorage.setItem(currentDoc, editable.innerHTML);
       });
-      localStorage.setItem('notelist',lb.innerHTML);
       $('#'+newDocId).dblclick(function (event) {
         //console.log("KEYUP! "+event.keyCode);
         //if(event.keyCode == 46){
@@ -152,7 +151,7 @@ $(document).ready(function () {
     }))
 
     // clicking a list item displays it in the main view
-    $("#question-list-container").delegate('li', 'mouseover', function () {
+    $("#question-list-container").delegate('li', 'click', function () {
       var li = $(this)
       var id = li.data('question-id')
 

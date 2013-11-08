@@ -24,9 +24,14 @@ body {
       float: left;
 }
 
-#pup {
+#question-list-container{
+  height: 300px;
+  overflow: auto;
+}
+
+/*#pup {
   position:absolute;
-  z-index:200; /* aaaalways on top*/
+  z-index:200;
   padding: 3px;
   margin-left: 10px;
   margin-top: 5px;
@@ -35,4 +40,9 @@ body {
   background-color: #777;
   color: white;
   font-size: 0.95em;
+}*/
+
+#pup {
+  height: 300px;
+  overflow: auto;
 }
