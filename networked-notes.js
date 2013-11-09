@@ -114,7 +114,7 @@ var addNode = function(note){
   }
 }
 
-var addEdge(source, target){
+var addEdge = function(source, target){
   var sourceIndex = indexer[note.id]
   var targetIndex = indexer[pne];
   graph.edges.push({source: sourceIndex, target:targetIndex});
