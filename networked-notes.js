@@ -71,6 +71,7 @@ var refreshGraph = function(){
         }).map(function(pne){
           var targetIndex = indexer[pne];
           return {source: sourceIndex, target:targetIndex};
+          // return {source: graph.nodes[sourceIndex],target: graph.nodes[targetIndex]}
         });
       return nodeEdges;
     });
@@ -107,9 +108,16 @@ var addNode = function(note){
       }).map(function(pne){
         var targetIndex = indexer[pne];
         return {source: sourceIndex, target:targetIndex};
+        // return {source: graph.nodes[sourceIndex],target: graph.nodes[targetIndex]}
       });
     graph.edges.push.apply(graph.edges,node.edges); 
   }
+}
+
+var addEdge(source, target){
+  var sourceIndex = indexer[note.id]
+  var targetIndex = indexer[pne];
+  graph.edges.push({source: sourceIndex, target:targetIndex});
 }
 
 // TODO: change to handle nodes that have been modified

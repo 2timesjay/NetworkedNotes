@@ -103,6 +103,7 @@
             $(this).focus();
             localStorage.setItem(currentDoc, editable.innerHTML);
           });
+          var lb = $('#listbody');
           localStorage.setItem('notelist',lb.innerHTML);
           $('#'+newDocId).dblclick(function (event) {
             //console.log("KEYUP! "+event.keyCode);
