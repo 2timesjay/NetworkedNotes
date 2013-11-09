@@ -11,13 +11,33 @@ var idx= lunr(function () {
   this.ref('id')
 })
 
+// activeNotes is the primary data location, or data model.
+// Notes, question-view(slightly) and canvas should treat this as primary.
+// work closely with this.
+var activeNotes = {
+  "who":{id:"who", title:"who", edges:["what"], text: "whotext"},
+  "what":{id:"what",title:"what", edges:["where"], text: "whattext"},
+  "where":{id:"where",title:"where", text: "wheretext"},
+  "why":{id:"why",title:"why", edges:["where"], text: "whytext"}
+};
+
+
+
+var noteValues = function(){
+  return Object.keys(activeNotes).map(function(key){return activeNotes[key];})
+}
+
+var noteIds = function(){
+  return noteValues().map(function(note){return note.id;})
+}
+
+
 $(document).ready(function () {
 
   // load view templates
   var questionViewTemplate = $("#question-view-template").text()
   var questionListTemplate = $("#question-list-template").text()
   var noteListTemplate = $("#note-list-template").text()
-
   var renderQuestionList = function (qs) {
     $("#question-list-container")
       .empty()
@@ -26,59 +46,36 @@ $(document).ready(function () {
 
   var renderNoteList = function (ns) {
     // $("#note-list-container")
+    // console.log(Mustache.to_html(noteListTemplate, {notes: ns}))
     $("#menu")
       .empty()
       .append(Mustache.to_html(noteListTemplate, {notes: ns}))
+
+    $('.note').bind('click', function () {
+      // console.log(this)
+      currentDoc = this.id;
+      editable.innerHTML = activeNotes[currentDoc].text
+    });
   }
 
-  var renderQuestionView = function (question, popupSelector) {
-    // console.log("Selector: "+popupSelector)
-    // popupSelector
-    // // $("#question-view-container")
-    //   .empty()
-    //   // .append(Mustache.to_html(questionViewTemplate, question))
-    
-    $('#pup')
+  var renderQuestionView = function (question) {
+    $('.pup')
       .empty()
       .append(Mustache.to_html(questionViewTemplate, question))
     // popupSelector.html($('#pup'))
 
     $('.add-control').bind("click", function () {
-      console.log("Clicked on Add To Canvas");
-      // var newDocId = selectedQuestion.title.split(' ').join('_');
+      // console.log("Clicked on Add To Canvas");
       var newDocId = selectedQuestion.id 
-      var elem = '<li><a href="#" class="note" id ="'+newDocId+'">'+newDocId +'</a></li>'
-      console.log(elem);
-      $("#listbody").append(elem)
-      addEvent(document.getElementById(newDocId), 'click', function () {
-        //console.log(this);  
-        currentDoc = this.id;
-        // editable.innerHTML = selectedQuestion.body 
-        editable.innerHTML = "What are your notes on this story?"
-        localStorage.setItem(newDocId,editable.innerHTML)
-        //editable.innerHTML = localStorage.getItem(currentDoc);
-        $(this).focus();
-        localStorage.setItem(currentDoc, editable.innerHTML);
-      });
-      $('#'+newDocId).dblclick(function (event) {
-        //console.log("KEYUP! "+event.keyCode);
-        //if(event.keyCode == 46){
-        if(true){  
-          var notename = $(this).id;
-          $(this).parent().remove();
-          localStorage.setItem(notename,'');
-          localStorage.setItem('notelist',lb.innerHTML);
-        }
-      });
-    //if(true){
-      console.log("creating node "+newDocId);
+      activeNotes[newDocId]=({id: newDocId, title: newDocId,text:newDocId+"text"})
+      renderNoteList(noteValues())
       var newDocId = newDocId; 
-  // insert new node at point
-      node = {id: ++lastNodeId, reflexive: false, title : newDocId};
+      // insert new node at point
+      node = {id: ++lastNodeId, reflexive: false, name : newDocId};
       node.x = 100;
       node.y = 100;
-      nodes.push(node);
-      restart();
+      graph.nodes.push(node);
+      canvasUpdate();
     });
   }
 
@@ -94,17 +91,7 @@ $(document).ready(function () {
     console.timeEnd('search')
   }
 
-  // var initialNotesData = {notes:[
-  //     {id:"who",title:"who"},
-  //     {id:"what",title:"what"},
-  //     {id:"where",title:"where"}
-  //   ]};
-  var initialNotesData = [
-      {id:"who",title:"who"},
-      {id:"what",title:"what"},
-      {id:"where",title:"where"}
-    ];
-  renderNoteList(initialNotesData)
+  renderNoteList(noteValues())
 
   // load the example data
   $.getJSON('short.json', function (data) {
@@ -158,8 +145,8 @@ $(document).ready(function () {
       selectedQuestion = questions.filter(function (question) {
         return (question.id == id)
       })[0]
-      renderQuestionView(selectedQuestion,li.find('.pup-container'))
-      console.log(selectedQuestion.id)
+      renderQuestionView(selectedQuestion)
+      // console.log(selectedQuestion.id)
     })
   })
 })

@@ -12,7 +12,7 @@ var h = 400;
 var d3TestTemplate = $("#d3-test-template").text()
 
 //Original data
-var dataset = {
+var graph = {
   nodes: [
     { name: "Adam", fixed: true, id : 0},
     { name: "Bob" , id : 1},
@@ -42,33 +42,11 @@ var dataset = {
   ]
 };
 
-// define arrow markers for graph links
-svg.append('svg:defs').append('svg:marker')
-    .attr('id', 'end-arrow')
-    .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 6)
-    .attr('markerWidth', 3)
-    .attr('markerHeight', 3)
-    .attr('orient', 'auto')
-  .append('svg:path')
-    .attr('d', 'M0,-5L10,0L0,5')
-    .attr('fill', '#000');
-
-svg.append('svg:defs').append('svg:marker')
-    .attr('id', 'start-arrow')
-    .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 4)
-    .attr('markerWidth', 3)
-    .attr('markerHeight', 3)
-    .attr('orient', 'auto')
-  .append('svg:path')
-    .attr('d', 'M10,-5L0,0L10,5')
-    .attr('fill', '#000');
-
-//Initialize a default force layout, using the nodes and edges in dataset
+lastNodeId = 9;
+//Initialize a default force layout, using the nodes and edges in graph
 var force = d3.layout.force()
-           .nodes(dataset.nodes)
-           .links(dataset.edges)
+           .nodes(graph.nodes)
+           .links(graph.edges)
            .size([w, h])
            .linkDistance([50])
            .charge([-100])
@@ -92,7 +70,7 @@ var path = svg.append('svg:g').selectAll('path'),
     circle = svg.append('svg:g').selectAll('g');
 
 function canvasUpdate(){
-  path = path.data(dataset.edges)
+  path = path.data(graph.edges)
   
   path.enter()
     .append("svg:path")
@@ -102,7 +80,7 @@ function canvasUpdate(){
 
   path.exit().remove()
 
-  circle = circle.data(dataset.nodes,function(d) { return d.id; })
+  circle = circle.data(graph.nodes,function(d) { return d.id; })
 
   var g = circle.enter().append('svg:g');
 
@@ -170,6 +148,6 @@ function testPush(){
   node = {name: "Kevin", id: 10};
   node.x = 100;
   node.y = 100;
-  dataset.nodes.push(node);
+  graph.nodes.push(node);
   canvasUpdate()
 }

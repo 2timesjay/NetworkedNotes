@@ -10,17 +10,10 @@
     <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
     <script src="mustache.js" type="text/javascript" charset="utf-8"></script>
     <script src="handlebars.js" type="text/javascript" charset="utf-8"></script>
-    <script src="h5utils.js"></script>
-    <script src="vector.js"></script>
+<!--     // <script src="h5utils.js"></script>
+    // <script src="vector.js"></script> -->
     <script src="http://d3js.org/d3.v3.js"></script>
     <script src="lunr.js" type="text/javascript" charset="utf-8"></script>
-    
-    <script id="d3-test-template" type="text/mustache">
-      <g>
-        <circle cx="100" cy="50" r="40" stroke="black"
-        stroke-width="2" fill="red" />
-      </g>
-    </script>
 
     <script id="question-list-template" type="text/mustache">
       <div>
@@ -28,7 +21,6 @@
           {{#questions}}
             <li data-question-id="{{id}}">
               <a href="#">{{title}}</a>
-              <div class="pup-container"></div>
             </li>
           {{/questions}}
         </ul>
@@ -88,8 +80,8 @@
             <!--div id='add-control-container'>
               <input type="button" class="addToCanvas" value="Add to Canvas" />
             </div-->
-            <div id='question-view-container'></div>
-            <div id='pup'></div>
+            <!-- <div class='question-view-container'></div> -->
+            <div class='pup'></div>
           </div>  
         </div>
       </div>
@@ -119,18 +111,7 @@
             <span>Create Document</span>
             <input type="text" id="create" value=""/>
           </div>
-        
-          <div>
-            <input type = "button" id="pause" value="Pause Forces">
-          </div>
-          <div id="mode-select" class="btn-group">
-            <button class="btn btn-primary active" onclick="setAppMode(MODE.EDIT)">
-              <i class="icon-pencil icon-white"></i> Edit Graph
-            </button>
-            <button class="btn btn-primary" onclick="setAppMode(MODE.EVAL)">
-              <i class="icon-eye-open icon-white"></i> Edit Text
-            </button>
-          </div>
+          <div class='pup'></div>
         </div>
       </div>
       <div id="tabs-3">
