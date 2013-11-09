@@ -14,21 +14,15 @@ var idx= lunr(function () {
 // activeNotes is the primary data location, or data model.
 // Notes, question-view(slightly) and canvas should treat this as primary.
 // work closely with this.
-var activeNotes = {
-  "who":{id:"who", title:"who", edges:["what"], text: "whotext"},
-  "what":{id:"what",title:"what", edges:["where"], text: "whattext"},
-  "where":{id:"where",title:"where", text: "wheretext"},
-  "why":{id:"why",title:"why", edges:["where"], text: "whytext"}
-};
-
-
-
-var noteValues = function(){
-  return Object.keys(activeNotes).map(function(key){return activeNotes[key];})
-}
+var activeNotes = [ 
+  {id:"who", title:"who", edges:["what"], text: "whotext"},
+  {id:"what",title:"what", edges:["where"], text: "whattext"},
+  {id:"where",title:"where", text: "wheretext"},
+  {id:"why",title:"why", edges:["where", "what"], text: "whytext"}
+];
 
 var noteIds = function(){
-  return noteValues().map(function(note){return note.id;})
+  return activeNotes.map(function(note){return note.id;})
 }
 
 
@@ -67,14 +61,15 @@ $(document).ready(function () {
     $('.add-control').bind("click", function () {
       // console.log("Clicked on Add To Canvas");
       var newDocId = selectedQuestion.id 
-      activeNotes[newDocId]=({id: newDocId, title: newDocId,text:newDocId+"text"})
-      renderNoteList(noteValues())
+      var newNote = {id: newDocId, title: newDocId,text:newDocId+"text"}
+      activeNotes.push(newNote)
+      renderNoteList(activeNotes)
       var newDocId = newDocId; 
       // insert new node at point
-      node = {id: ++lastNodeId, reflexive: false, name : newDocId};
-      node.x = 100;
-      node.y = 100;
-      graph.nodes.push(node);
+      // node = {id: ++lastNodeId, reflexive: false, name : newDocId};
+      // node.x = 100;
+      // node.y = 100;
+      // graph.nodes.push(node);
       canvasUpdate();
     });
   }
@@ -91,11 +86,11 @@ $(document).ready(function () {
     console.timeEnd('search')
   }
 
-  renderNoteList(noteValues())
+  renderNoteList(activeNotes)
 
   // load the example data
   $.getJSON('short.json', function (data) {
-    console.log(data);
+    // console.log(data);
     // format the raw json into a form that is simpler to work with
     questions = data.map(function (raw) {
       return {

@@ -9,8 +9,6 @@ and metromap from the ground up.
 var w = 800;
 var h = 400;
 
-var d3TestTemplate = $("#d3-test-template").text()
-
 //Original data
 var graph = {
   nodes: [
@@ -42,7 +40,87 @@ var graph = {
   ]
 };
 
-lastNodeId = 9;
+var indexer = {};
+
+//Transforms Object-format activeNotes into
+//a new graph. This will reset everything even
+//if the update is incremental
+var refreshGraph = function(){
+  var graphData = activeNotes
+  var newNodes = graphData
+    .map(function(note){
+      // var node = {id: note.id, title: note.title, x: w/2, y:h/2};
+      var node = {id: note.id, title: note.title};
+      return node; 
+    });  
+
+  var nodeIds = graphData.map(function(node){return node.id;});
+
+  nodeIds.forEach(function(val,idx){indexer[val] = idx;});
+  // for(var i = 0; i < nodeIds.length; i++){indexer[nodeIds[i]] = i;}
+
+  var newEdges = []
+  var newEdgesList = graphData
+    .map(function(note){
+      var sourceIndex = indexer[note.id]
+      if(!("edges" in note)){ return []}
+      var potentialNodeEdges = note.edges;
+      var nodeEdges = potentialNodeEdges
+        .filter(function(pne){
+          return pne in indexer;
+        }).map(function(pne){
+          var targetIndex = indexer[pne];
+          return {source: sourceIndex, target:targetIndex};
+        });
+      return nodeEdges;
+    });
+  var merged = []
+  newEdges = merged.concat.apply(merged,newEdgesList);
+  var newGraph = {};
+  newGraph.nodes = newNodes;
+  newGraph.edges = newEdges;
+  // console.log(newGraph)
+  //update graph data structure without causing problems
+  //with force; would require force().nodes(...) etc otherwise
+  graph.nodes.length = 0;
+  graph.nodes.push.apply(graph.nodes,newGraph.nodes);
+  graph.edges.length = 0;
+  graph.edges.push.apply(graph.edges,newGraph.edges);
+}
+refreshGraph();
+
+//Updates graph from activeNotes not currently included
+//Gentler, doesn't reset all our forces.
+var addNode = function(note){
+  if(!(note.id in indexer)){
+    //Create and push a new node
+    indexer[note.id] = indexer.length
+    var node = {id: note.id, title: note.title};
+    graph.nodes.push(node);
+    //Create and push it's indexed edges
+    var sourceIndex = indexer[note.id]
+    if(!("edges" in note)){ return []}
+    var potentialNodeEdges = note.edges;
+    var nodeEdges = potentialNodeEdges
+      .filter(function(pne){
+        return pne in indexer;
+      }).map(function(pne){
+        var targetIndex = indexer[pne];
+        return {source: sourceIndex, target:targetIndex};
+      });
+    graph.edges.push.apply(graph.edges,node.edges); 
+  }
+}
+
+// TODO: change to handle nodes that have been modified
+// Simply adds nodes right now, can't deal with edges
+var updateGraph = function(){
+  var graphData = activeNotes
+  graphData
+    .filter(function(node){return !(node.id in indexer);})
+    .forEach(addNode);
+}
+
 //Initialize a default force layout, using the nodes and edges in graph
 var force = d3.layout.force()
            .nodes(graph.nodes)
@@ -70,6 +148,11 @@ var path = svg.append('svg:g').selectAll('path'),
     circle = svg.append('svg:g').selectAll('g');
 
 function canvasUpdate(){
+  // graph = dataToGraph();
+  // var newGraph = dataToGraph();
+  // refreshGraph();
+  updateGraph();
+
   path = path.data(graph.edges)
   
   path.enter()
@@ -104,7 +187,7 @@ function canvasUpdate(){
       .attr('x', 0)
       .attr('y', 4)
       .attr('class', 'id')
-      .text(function(d) { return d.name ;  });
+      .text(function(d) { return d.id ;  });
 
   circle.exit().remove();
 
