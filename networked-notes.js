@@ -283,24 +283,6 @@ function updateCanvas(){
   force.start()
 }
 updateCanvas();
-
-var updateNodeVisual = function(node){
-  node.filter(function(n){return n === node})
-
-}
-
-var updateEdgeVisual = function(edge){
-  // console.log("updating edge: "+edge)
-  path.filter(function(e){return e === edge;})
-    .style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
-    .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; });
-
-  path.filter(function(e){return e === edge;})
-    .attr('class','link')
-    .classed('selected', function(d) { return d === selected_link; })
-    .style('stroke-width', 5)
-    .style('stroke', function(d){return d3.rgb(colors(d.line));});
-}
       
 //External node update; works with svg:g
 var updateNode = function() {
