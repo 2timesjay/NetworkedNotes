@@ -241,10 +241,15 @@ function resetMouseVars() {
   mousedown_edge = null;
 }
 
+/**
+ * updateCanvas is an update loop that need 
+ * only run on model updates.
+ */
 function updateCanvas(){
   updateGraph();
 
-  path = path.data(graph.edges)
+  // path = path.data(graph.edges);
+  path = path.data(graph.edges,function(d){return d.source.id+"-"+d.target.id;});
   
   // update existing edges
   path
@@ -276,10 +281,12 @@ function updateCanvas(){
 
   path.exit().remove()
 
+
   circle = circle.data(graph.nodes,function(d) { return d.id; })
 
   // add new nodes
   var g = circle.enter().append('svg:g');
+  console.log(g);
 
   g.append("svg:circle")    
     .attr('class', 'node')
@@ -374,7 +381,7 @@ function mousedown() {
   // node.y = point[1];
   // graph.nodes.push(node);
 
-  updateCanvas();
+  // updateCanvas();
 }
 
 function mousemove() {
