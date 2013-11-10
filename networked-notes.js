@@ -3,6 +3,12 @@ This is the new networked notes graph code.
 Hopefully it will stay well-contained.
 I am re-building the functionality of dag
 and metromap from the ground up.
+
+What actually goes on with graph.nodes vs circle and graph.edges vs path?
+Circles and path bind the graph data to a bunch of stuff related to managing 
+svg and interaction. You can add an edge referencing source and target path
+elements, but not source and target node.edges. Path and circle elements also
+have x,y and px,py information, i.e. the most vital stuff for actual rendering. 
 */
 
 //Width and height
@@ -24,19 +30,19 @@ var graph = {
     { name: "Jerry" , id : 9}
   ],
   edges: [
-    { source: 0, target: 1 },
-    { source: 0, target: 2 },
-    { source: 0, target: 3 },
-    { source: 0, target: 4 },
-    { source: 1, target: 5 },
-    { source: 2, target: 5 },
-    { source: 2, target: 5 },
-    { source: 3, target: 4 },
-    { source: 5, target: 8 },
-    { source: 5, target: 9 },
-    { source: 6, target: 7 },
-    { source: 7, target: 8 },
-    { source: 8, target: 9 }
+    { source: 0, target: 1, line: 0 },
+    { source: 0, target: 2, line: 0 },
+    { source: 0, target: 3, line: 0 },
+    { source: 0, target: 4, line: 0 },
+    { source: 1, target: 5, line: 0 },
+    { source: 2, target: 5, line: 0 },
+    { source: 2, target: 5, line: 0 },
+    { source: 3, target: 4, line: 0 },
+    { source: 5, target: 8, line: 0 },
+    { source: 5, target: 9, line: 0 },
+    { source: 6, target: 7, line: 0 },
+    { source: 7, target: 8, line: 0 },
+    { source: 8, target: 9, line: 0 }
   ]
 };
 
@@ -70,7 +76,7 @@ var refreshGraph = function(){
           return pne in indexer;
         }).map(function(pne){
           var targetIndex = indexer[pne];
-          return {source: sourceIndex, target:targetIndex};
+          return {source: sourceIndex, target:targetIndex, line:0};
           // return {source: graph.nodes[sourceIndex],target: graph.nodes[targetIndex]}
         });
       return nodeEdges;
@@ -95,29 +101,34 @@ refreshGraph();
 var addNode = function(note){
   if(!(note.id in indexer)){
     //Create and push a new node
-    indexer[note.id] = indexer.length
+    indexer[note.id] = Object.keys(indexer).length;
     var node = {id: note.id, title: note.title};
     graph.nodes.push(node);
     //Create and push it's indexed edges
-    var sourceIndex = indexer[note.id]
+    // var sourceIndex = indexer[note.id]
+    // source = note
     if(!("edges" in note)){ return []}
     var potentialNodeEdges = note.edges;
     var nodeEdges = potentialNodeEdges
       .filter(function(pne){
         return pne in indexer;
-      }).map(function(pne){
-        var targetIndex = indexer[pne];
-        return {source: sourceIndex, target:targetIndex};
+      }).forEach(function(pne){
+        console.log("adding edge to "+pne)
+        // var targetIndex = indexer[pne];
+        addEdge(note.id,pne)
+        // return {source: sourceIndex, target:targetIndex};
         // return {source: graph.nodes[sourceIndex],target: graph.nodes[targetIndex]}
       });
-    graph.edges.push.apply(graph.edges,node.edges); 
+    // graph.edges.push.apply(graph.edges,node.edges); 
   }
 }
 
-var addEdge = function(source, target){
-  var sourceIndex = indexer[note.id]
-  var targetIndex = indexer[pne];
-  graph.edges.push({source: sourceIndex, target:targetIndex});
+var addEdge = function(sourceId, targetId){
+  console.log(sourceId+" to "+targetId);
+  var sourceIndex = indexer[sourceId];
+  var targetIndex = indexer[targetId];
+  console.log(sourceIndex+" to "+targetIndex);
+  graph.edges.push({source: sourceIndex, target:targetIndex, line: 0});
 }
 
 // TODO: change to handle nodes that have been modified
@@ -129,12 +140,27 @@ var updateGraph = function(){
     .forEach(addNode);
 }
 
+// mouse event vars
+var selected_node = null,
+    selected_link = null,
+    mousedown_link = null,
+    mousedown_node = null,
+    dblclick_node = null,
+    mouseup_node = null;
+
+function resetMouseVars() {
+  dblclick_node = null;
+  mousedown_node = null;
+  mouseup_node = null;
+  mousedown_link = null;
+}
+
 //Initialize a default force layout, using the nodes and edges in graph
 var force = d3.layout.force()
            .nodes(graph.nodes)
            .links(graph.edges)
            .size([w, h])
-           .linkDistance([50])
+           .linkDistance([80])
            .charge([-100])
            .on("tick",tick)
            .start();
@@ -147,6 +173,34 @@ var svg = d3.select("#graphic")
       .attr("width", w)
       .attr("height", h);
 
+// define arrow markers for graph links
+svg.append('svg:defs').append('svg:marker')
+    .attr('id', 'end-arrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 6)
+    .attr('markerWidth', 3)
+    .attr('markerHeight', 3)
+    .attr('orient', 'auto')
+  .append('svg:path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('fill', '#000');
+
+svg.append('svg:defs').append('svg:marker')
+    .attr('id', 'start-arrow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 4)
+    .attr('markerWidth', 3)
+    .attr('markerHeight', 3)
+    .attr('orient', 'auto')
+  .append('svg:path')
+    .attr('d', 'M10,-5L0,0L10,5')
+    .attr('fill', '#000');
+
+// line displayed when dragging new nodes
+var drag_line = svg.append('svg:path')
+  .attr('class', 'link dragline hidden')
+  .attr('d', 'M0,0L0,0');
+
 
 // handles to link and node element groups
 // Won't work unless we already append the svg:g
@@ -155,7 +209,7 @@ var svg = d3.select("#graphic")
 var path = svg.append('svg:g').selectAll('path'),
     circle = svg.append('svg:g').selectAll('g');
 
-function canvasUpdate(){
+function updateCanvas(){
   // graph = dataToGraph();
   // var newGraph = dataToGraph();
   // refreshGraph();
@@ -163,11 +217,36 @@ function canvasUpdate(){
 
   path = path.data(graph.edges)
   
-  path.enter()
-    .append("svg:path")
-    // .append("line")
-    .style("stroke", "#ccc")
-    .style("stroke-width", 3);
+  // update existing links
+  path
+    .style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
+    .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; });
+
+  path.attr('class','link')
+    .classed('selected', function(d) { return d === selected_link; })
+    .style('stroke-width', 5)
+    .style('stroke', function(d){return d3.rgb(colors(d.line));});
+
+  // add new links
+  path.enter().append('svg:path')
+    .attr('class', 'link')
+    .classed('selected', function(d) { return d === selected_link; })
+    .style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
+    .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; })
+    .style('stroke-width', 5)
+    .style('stroke', function(d){return d3.rgb(colors(d.line));})
+    // .style('stroke-dasharray', "5,5")
+    .on('mousedown', function(d) {
+      if(d3.event.ctrlKey) return;
+
+      // select link
+      mousedown_link = d;
+      if(mousedown_link === selected_link) selected_link = null;
+      else selected_link = mousedown_link;
+      selected_node = null;
+
+      updateCanvas();
+    });
 
   path.exit().remove()
 
@@ -203,7 +282,25 @@ function canvasUpdate(){
 
   force.start()
 }
-canvasUpdate();
+updateCanvas();
+
+var updateNodeVisual = function(node){
+  node.filter(function(n){return n === node})
+
+}
+
+var updateEdgeVisual = function(edge){
+  // console.log("updating edge: "+edge)
+  path.filter(function(e){return e === edge;})
+    .style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
+    .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; });
+
+  path.filter(function(e){return e === edge;})
+    .attr('class','link')
+    .classed('selected', function(d) { return d === selected_link; })
+    .style('stroke-width', 5)
+    .style('stroke', function(d){return d3.rgb(colors(d.line));});
+}
       
 //External node update; works with svg:g
 var updateNode = function() {
@@ -214,20 +311,22 @@ var updateNode = function() {
 
 //Every time the simulation "ticks", this will be called
 function tick() {
-  // draw edges
   // svg:path version
+  // draw directed edges with proper padding from node centers
   path.attr('d', function(d) {
-    var sourceX = d.source.x,
-        sourceY = d.source.y,
-        targetX = d.target.x,
-        targetY = d.target.y;
+    var deltaX = d.target.x - d.source.x,
+        deltaY = d.target.y - d.source.y,
+        dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
+        normX = deltaX / dist,
+        normY = deltaY / dist,
+        sourcePadding = d.left ? 17 : 12,
+        targetPadding = d.right ? 17 : 12,
+        sourceX = d.source.x + (sourcePadding * normX),
+        sourceY = d.source.y + (sourcePadding * normY),
+        targetX = d.target.x - (targetPadding * normX),
+        targetY = d.target.y - (targetPadding * normY);
     return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
   });
-  // line version
-  // path.attr("x1", function(d) { return d.source.x; })
-  //   .attr("y1", function(d) { return d.source.y; })
-  //   .attr("x2", function(d) { return d.target.x; })
-  //   .attr("y2", function(d) { return d.target.y; });
 
   //draw nodes
   circle.attr('transform', function(d) {
@@ -235,10 +334,20 @@ function tick() {
   });
 }
 
-function testPush(){
-  node = {name: "Kevin", id: 10};
-  node.x = 100;
-  node.y = 100;
-  graph.nodes.push(node);
-  canvasUpdate()
+function testNodePush(){
+  note = {id: "yyy",title:"yyy",text:"yyytext"};
+  activeNotes.push(note);
+  updateCanvas();
 }
+
+function testNodeEdgePush(){
+  note = {id: "zzz",title:"zzz",edges:["who"],text:"zzztext"};
+  activeNotes.push(note);
+  updateCanvas();
+}
+
+// app starts here
+// svg.on('mousedown', mousedown)
+//   .on('mousemove', mousemove)
+//   .on('mouseup', mouseup)
+//   .on('dblclick',dblclick);

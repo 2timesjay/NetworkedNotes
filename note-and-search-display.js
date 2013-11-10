@@ -70,7 +70,7 @@ $(document).ready(function () {
       // node.x = 100;
       // node.y = 100;
       // graph.nodes.push(node);
-      canvasUpdate();
+      updateCanvas();
     });
   }
 

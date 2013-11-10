@@ -15,6 +15,18 @@ body {
       font-size: 12px;
     }
 
+path.link.selected {
+  stroke-dasharray: 10,2;
+}
+
+path.link.dragline {
+  pointer-events: none;
+}
+
+path.link.hidden {
+  stroke-width: 0;
+}
+
 #heading {
       height: 100px;
 }
