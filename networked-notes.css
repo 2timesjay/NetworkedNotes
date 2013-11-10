@@ -15,6 +15,17 @@ body {
       font-size: 12px;
     }
 
+path.link {
+  fill: none;
+  stroke: #000;
+  stroke-width: 4px;
+  cursor: default;
+}
+
+svg:not(.active):not(.ctrl) path.link {
+  cursor: pointer;
+}
+
 path.link.selected {
   stroke-dasharray: 10,2;
 }
@@ -25,6 +36,21 @@ path.link.dragline {
 
 path.link.hidden {
   stroke-width: 0;
+}
+
+circle.node {
+  stroke-width: 3.0px;
+  cursor: pointer;
+}
+
+text {
+  font: 12px sans-serif;
+  pointer-events: none;
+}
+
+text.id {
+  text-anchor: middle;
+  font-weight: bold;
 }
 
 #heading {

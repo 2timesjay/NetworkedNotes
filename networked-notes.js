@@ -124,11 +124,15 @@ var addNode = function(note){
 }
 
 var addEdge = function(sourceId, targetId){
-  console.log(sourceId+" to "+targetId);
   var sourceIndex = indexer[sourceId];
   var targetIndex = indexer[targetId];
-  console.log(sourceIndex+" to "+targetIndex);
-  graph.edges.push({source: sourceIndex, target:targetIndex, line: 0});
+  if(graph.edges.filter(function(d){
+      return (d.source.id == sourceId && d.target.id == targetId)
+        || (d.source.id == targetId && d.target.id == sourceId);
+    }).length == 0){
+    console.log(sourceIndex+" to "+targetIndex);
+    graph.edges.push({source: sourceIndex, target:targetIndex, line: 0});
+  }
 }
 
 // TODO: change to handle nodes that have been modified
@@ -165,7 +169,7 @@ var force = d3.layout.force()
            .on("tick",tick)
            .start();
 
-var colors = d3.scale.category20();
+var colors = d3.scale.category10();
 
 //Create SVG element
 var svg = d3.select("#graphic")
@@ -252,20 +256,83 @@ function updateCanvas(){
 
   circle = circle.data(graph.nodes,function(d) { return d.id; })
 
+  // update existing nodes (reflexive & selected visual states)
+  circle.selectAll('circle')
+    // .style('fill', function(d) { var nodeColor = (d === selected_node) ? d3.rgb(colors(d.id)).brighter().brighter().toString() 
+    //   : ((d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() 
+    //   : colors(d.id)); 
+    //   console.log(nodeColor);
+    //   return nodeColor;
+    // })
+    .style('fill', function(d) { return (d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() : colors(d.id); })
+    .style('stroke', function(d) { return (d === selected_node)? "#000" : d3.rgb(colors(d.id)).darker().toString(); })
+
+  // add new nodes
   var g = circle.enter().append('svg:g');
 
-  g.append("svg:circle")
-    .attr("r", 10)
-    .style("fill", function(d, i) {
-      return colors(i);
-    }).on("mouseover", function() {
-      d3.select(this)
-        .attr("r", 15);
+  g.append("svg:circle")    
+    .attr('class', 'node')
+    .attr('r', 12)
+    // .style('fill', function(d) { var nodeColor = (d === selected_node) ? d3.rgb(colors(d.id)).brighter().brighter().toString() 
+    //   : ((d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() 
+    //   : colors(d.id)); 
+    //   console.log(nodeColor);
+    //   return nodeColor;
+    // })
+    .style('fill', function(d) { return (d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() : colors(d.id); })
+    .style('stroke', function(d) { return (d === selected_node)? "#000" : d3.rgb(colors(d.id)).darker().toString(); })
+    .on('mouseover', function(d) {
+      // if(!mousedown_node || d === mousedown_node) return;
+      // enlarge target node
+      d3.select(this).attr('transform','scale(1.1)');
     }).on("mouseout", function() {
       d3.select(this)
         .transition()
         .duration(500)
-        .attr("r", 10);
+        .attr('transform','');
+    }).on('dblclick', function(d) {
+        dblclick_node = d;
+            
+    }).on('mousedown', function(d) {
+      if(d3.event.ctrlKey) return;
+    
+      // select node
+      mousedown_node = d;
+      if(mousedown_node === selected_node) selected_node = null;
+      else selected_node = mousedown_node;
+      selected_link = null;
+
+      // reposition drag line
+      drag_line
+        .style('marker-end', 'url(#end-arrow)')
+        .classed('hidden', false)
+        .attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + mousedown_node.x + ',' + mousedown_node.y);
+
+      updateCanvas();
+    }).on('mouseup', function(d) {
+      if(!mousedown_node) return;
+
+      // needed by FF
+      drag_line
+        .classed('hidden', true)
+        .style('marker-end', '');
+
+      // check for drag-to-self
+      mouseup_node = d;
+      if(mouseup_node === mousedown_node) { resetMouseVars(); return; }
+
+      // unenlarge target node
+      d3.select(this).attr('transform', '');
+
+      // add link to graph (update if exists)
+      // NB: links are strictly source < target; arrows separately specified by booleans
+      var source, target, direction;
+      addEdge(mousedown_node.id, mouseup_node.id) 
+
+      // select new link
+      selected_link = null;
+      selected_node = null;
+      updateCanvas();
     });
 
   // g.append(Mustache.to_html(d3TestTemplate,''))
@@ -278,11 +345,62 @@ function updateCanvas(){
 
   circle.exit().remove();
 
-  circle.call(force.drag);
+  // circle.call(force.drag);
 
   force.start()
 }
 updateCanvas();
+
+function mousedown() {
+  // prevent I-bar on drag
+  //d3.event.preventDefault();
+  
+  // because :active only works in WebKit?
+  svg.classed('active', true);
+
+  if(d3.event.ctrlKey || mousedown_node || mousedown_link) return;
+
+  // // insert new node at point
+  // var point = d3.mouse(this),
+  //     node = {id: "test", title: "test"};
+
+  // //console.log(point[0]+" "+ point[1]);
+  // node.x = point[0];
+  // node.y = point[1];
+  // graph.nodes.push(node);
+
+  updateCanvas();
+}
+
+function dblclick() {
+    //console.log(dblclick_node);
+    dblclick_node.fixed = !dblclick_node.fixed;
+
+    updateCanvas();
+}
+
+function mousemove() {
+  if(!mousedown_node) return;
+
+  // update drag line
+  drag_line.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1]);
+  updateCanvas();
+}
+
+function mouseup() {
+  if(mousedown_node) {
+    // hide drag line
+    drag_line
+      .classed('hidden', true)
+      .style('marker-end', '');
+  }
+
+  // because :active only works in WebKit?
+  svg.classed('active', false);
+
+  // clear mouse event vars
+  resetMouseVars();
+}
       
 //External node update; works with svg:g
 var updateNode = function() {
@@ -329,7 +447,8 @@ function testNodeEdgePush(){
 }
 
 // app starts here
-// svg.on('mousedown', mousedown)
-//   .on('mousemove', mousemove)
-//   .on('mouseup', mouseup)
-//   .on('dblclick',dblclick);
+svg.classed('edit', true)
+  .on('mousedown', mousedown)
+  .on('mousemove', mousemove)
+  .on('mouseup', mouseup)
+  .on('dblclick',dblclick);
