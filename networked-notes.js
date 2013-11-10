@@ -144,21 +144,6 @@ var updateGraph = function(){
     .forEach(addNode);
 }
 
-// mouse event vars
-var selected_node = null,
-    selected_link = null,
-    mousedown_link = null,
-    mousedown_node = null,
-    dblclick_node = null,
-    mouseup_node = null;
-
-function resetMouseVars() {
-  dblclick_node = null;
-  mousedown_node = null;
-  mouseup_node = null;
-  mousedown_link = null;
-}
-
 //Initialize a default force layout, using the nodes and edges in graph
 var force = d3.layout.force()
            .nodes(graph.nodes)
@@ -177,7 +162,7 @@ var svg = d3.select("#graphic")
       .attr("width", w)
       .attr("height", h);
 
-// define arrow markers for graph links
+// define arrow markers for graph edges
 svg.append('svg:defs').append('svg:marker')
     .attr('id', 'end-arrow')
     .attr('viewBox', '0 -5 10 10')
@@ -206,66 +191,92 @@ var drag_line = svg.append('svg:path')
   .attr('d', 'M0,0L0,0');
 
 
-// handles to link and node element groups
+// handles to edge and node element groups
 // Won't work unless we already append the svg:g
 // Can't try to keep redoing the original minGraph
 // Nodes assignment
 var path = svg.append('svg:g').selectAll('path'),
     circle = svg.append('svg:g').selectAll('g');
 
+// mouse event vars
+var selected_node = null,//Eventified
+    selected_edge = null,//Eventified
+    dblclick_node = null,//Eventified
+    mousedown_edge = null,
+    mousedown_node = null,
+    mouseup_node = null;
+
+//Event-based management of mouse event
+var selectEdge = function(edge){
+  edge = (typeof edge === "undefined") ? selected_edge : edge;
+  // if(edge == null){selected_edge = null; return;}
+  selected_edge = edge;
+  path.attr('class','link')
+    .classed('selected', function(d) {return d === selected_edge; })
+}
+
+var selectNode = function(node){
+  node = (typeof node === "undefined") ? selected_node : node;
+  // if(node == null){selected_node = null; return;}
+  selected_node = node;
+  circle.selectAll('circle')
+     .style('stroke', function(d) { return (d === selected_node)? "#000" : d3.rgb(colors(d.id)).darker().toString(); })
+}
+
+var dblclickNode = function(node){
+  node = (typeof node === "undefined") ? dblclick_node : node;
+  if(node == null){dblclick_node = null; return;}
+  else{
+    dblclick_node = node;
+    dblclick_node.fixed = !dblclick_node.fixed;
+  }
+  circle.selectAll('circle')
+    .style('fill', function(d) { return (d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() : colors(d.id); })
+}
+
+function resetMouseVars() {
+  dblclickNode(null);
+  mousedown_node = null;
+  mouseup_node = null;
+  mousedown_edge = null;
+}
+
 function updateCanvas(){
-  // graph = dataToGraph();
-  // var newGraph = dataToGraph();
-  // refreshGraph();
   updateGraph();
 
   path = path.data(graph.edges)
   
-  // update existing links
+  // update existing edges
   path
     .style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
     .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; });
 
   path.attr('class','link')
-    .classed('selected', function(d) { return d === selected_link; })
-    .style('stroke-width', 5)
+     .style('stroke-width', 5)
     .style('stroke', function(d){return d3.rgb(colors(d.line));});
 
   // add new links
   path.enter().append('svg:path')
     .attr('class', 'link')
-    .classed('selected', function(d) { return d === selected_link; })
     .style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
     .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; })
     .style('stroke-width', 5)
     .style('stroke', function(d){return d3.rgb(colors(d.line));})
-    // .style('stroke-dasharray', "5,5")
     .on('mousedown', function(d) {
       if(d3.event.ctrlKey) return;
 
       // select link
-      mousedown_link = d;
-      if(mousedown_link === selected_link) selected_link = null;
-      else selected_link = mousedown_link;
-      selected_node = null;
-
-      updateCanvas();
+      mousedown_edge = d;
+      if(mousedown_edge === selected_edge) selectEdge(null);
+      else selectEdge(mousedown_edge);
+      selectNode(null);
     });
+
+  selectEdge();
 
   path.exit().remove()
 
   circle = circle.data(graph.nodes,function(d) { return d.id; })
-
-  // update existing nodes (reflexive & selected visual states)
-  circle.selectAll('circle')
-    // .style('fill', function(d) { var nodeColor = (d === selected_node) ? d3.rgb(colors(d.id)).brighter().brighter().toString() 
-    //   : ((d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() 
-    //   : colors(d.id)); 
-    //   console.log(nodeColor);
-    //   return nodeColor;
-    // })
-    .style('fill', function(d) { return (d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() : colors(d.id); })
-    .style('stroke', function(d) { return (d === selected_node)? "#000" : d3.rgb(colors(d.id)).darker().toString(); })
 
   // add new nodes
   var g = circle.enter().append('svg:g');
@@ -273,42 +284,33 @@ function updateCanvas(){
   g.append("svg:circle")    
     .attr('class', 'node')
     .attr('r', 12)
-    // .style('fill', function(d) { var nodeColor = (d === selected_node) ? d3.rgb(colors(d.id)).brighter().brighter().toString() 
-    //   : ((d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() 
-    //   : colors(d.id)); 
-    //   console.log(nodeColor);
-    //   return nodeColor;
-    // })
-    .style('fill', function(d) { return (d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() : colors(d.id); })
-    .style('stroke', function(d) { return (d === selected_node)? "#000" : d3.rgb(colors(d.id)).darker().toString(); })
+    .style('fill', function(d) { return colors(d.id); })
+    .style('stroke', function(d) { return d3.rgb(colors(d.id)).darker().toString(); })
     .on('mouseover', function(d) {
       // if(!mousedown_node || d === mousedown_node) return;
       // enlarge target node
-      d3.select(this).attr('transform','scale(1.1)');
+      d3.select(this).attr('transform','scale(1.25)');
     }).on("mouseout", function() {
       d3.select(this)
         .transition()
         .duration(500)
         .attr('transform','');
     }).on('dblclick', function(d) {
-        dblclick_node = d;
-            
+        dblclickNode(d);
     }).on('mousedown', function(d) {
       if(d3.event.ctrlKey) return;
-    
       // select node
       mousedown_node = d;
-      if(mousedown_node === selected_node) selected_node = null;
-      else selected_node = mousedown_node;
-      selected_link = null;
+      //deselect by clicking selected
+      if(mousedown_node === selected_node) selectNode(null);
+      else selectNode(mousedown_node);
+      selectEdge(null);
 
       // reposition drag line
       drag_line
         .style('marker-end', 'url(#end-arrow)')
         .classed('hidden', false)
         .attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + mousedown_node.x + ',' + mousedown_node.y);
-
-      updateCanvas();
     }).on('mouseup', function(d) {
       if(!mousedown_node) return;
 
@@ -324,14 +326,14 @@ function updateCanvas(){
       // unenlarge target node
       d3.select(this).attr('transform', '');
 
-      // add link to graph (update if exists)
-      // NB: links are strictly source < target; arrows separately specified by booleans
+      // add edge to graph (update if exists)
+      // NB: edges are strictly source < target; arrows separately specified by booleans
       var source, target, direction;
       addEdge(mousedown_node.id, mouseup_node.id) 
 
-      // select new link
-      selected_link = null;
-      selected_node = null;
+      // select new edge TODO; currently null edge
+      selectEdge(null);
+      selectNode(null);
       updateCanvas();
     });
 
@@ -342,6 +344,9 @@ function updateCanvas(){
       .attr('y', 4)
       .attr('class', 'id')
       .text(function(d) { return d.id ;  });
+
+  selectNode();
+  dblclickNode();
 
   circle.exit().remove();
 
@@ -358,7 +363,7 @@ function mousedown() {
   // because :active only works in WebKit?
   svg.classed('active', true);
 
-  if(d3.event.ctrlKey || mousedown_node || mousedown_link) return;
+  if(d3.event.ctrlKey || mousedown_node || mousedown_edge) return;
 
   // // insert new node at point
   // var point = d3.mouse(this),
@@ -372,19 +377,11 @@ function mousedown() {
   updateCanvas();
 }
 
-function dblclick() {
-    //console.log(dblclick_node);
-    dblclick_node.fixed = !dblclick_node.fixed;
-
-    updateCanvas();
-}
-
 function mousemove() {
   if(!mousedown_node) return;
 
   // update drag line
   drag_line.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1]);
-  updateCanvas();
 }
 
 function mouseup() {
@@ -450,5 +447,4 @@ function testNodeEdgePush(){
 svg.classed('edit', true)
   .on('mousedown', mousedown)
   .on('mousemove', mousemove)
-  .on('mouseup', mouseup)
-  .on('dblclick',dblclick);
+  .on('mouseup', mouseup);
