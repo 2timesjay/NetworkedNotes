@@ -17,33 +17,8 @@ var h = 400;
 
 //Original data
 var graph = {
-  nodes: [
-    { name: "Adam", fixed: true, id : 0},
-    { name: "Bob" , id : 1},
-    { name: "Carrie", fixed: true , id : 2},
-    { name: "Donovan" , id : 3},
-    { name: "Edward" , id : 4},
-    { name: "Felicity" , id : 5},
-    { name: "George", fixed: true , id : 6},
-    { name: "Hannah" , id : 7},
-    { name: "Iris" , id : 8},
-    { name: "Jerry" , id : 9}
-  ],
-  edges: [
-    { source: 0, target: 1, line: 0 },
-    { source: 0, target: 2, line: 0 },
-    { source: 0, target: 3, line: 0 },
-    { source: 0, target: 4, line: 0 },
-    { source: 1, target: 5, line: 0 },
-    { source: 2, target: 5, line: 0 },
-    { source: 2, target: 5, line: 0 },
-    { source: 3, target: 4, line: 0 },
-    { source: 5, target: 8, line: 0 },
-    { source: 5, target: 9, line: 0 },
-    { source: 6, target: 7, line: 0 },
-    { source: 7, target: 8, line: 0 },
-    { source: 8, target: 9, line: 0 }
-  ]
+  nodes: [],
+  edges: []
 };
 
 var indexer = {};//Chronicles add order(?)
@@ -417,8 +392,11 @@ function mouseup() {
   resetMouseVars();
 }
 
+// only respond once per keydown
+var lastKeyDown = -1;
+
 function keydown() {
-  console.log("keydown event "+d3.event.keyCode);
+  // console.log("keydown event "+d3.event.keyCode);
   // d3.event.preventDefault();
 
   if(lastKeyDown !== -1) return;

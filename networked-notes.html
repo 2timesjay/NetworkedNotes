@@ -29,12 +29,16 @@
 
     <script id="note-list-template" type="text/mustache">
       <div>
-        <ul id="listbody">
+        <div><h2>Working Set</h2></div>
+        <ul id="working-notes">
           {{#notes}}
-            <li>
+            <li class="note-bullet">
               <a class="note" id="{{id}}" href="#">{{title}}</a>
             </li>
           {{/notes}}
+        </ul>
+        <div><h2>Archived Set</h2></div>
+        <ul id="archived-notes">
         </ul>
       </div>
     </script>
@@ -92,11 +96,6 @@
           </div>
 
           <div id="menu">
-            <ul id = "listbody">
-              <li><a href="#" class="note" id="who">Who</a></li>
-              <li><a href="#" class="note" id = "what">What</a></li>
-              <li><a href="#" class="note" id = "where">Where</a></li>
-            </ul>
           </div>
 
           <div id="editable" contentEditable="true" desigmode="on">

@@ -15,10 +15,11 @@ var idx= lunr(function () {
 // Notes, question-view(slightly) and canvas should treat this as primary.
 // work closely with this.
 var activeNotes = [ 
-  {id:"who", title:"who", edges:["what"], text: "whotext"},
-  {id:"what",title:"what", edges:["where"], text: "whattext"},
-  {id:"where",title:"where", text: "wheretext"},
-  {id:"why",title:"why", edges:["where", "what"], text: "whytext"}
+  {id:"who", title:"who", edges:["what"], text: "whotext", working: true},
+  {id:"what",title:"what", edges:["where"], text: "whattext", working: true},
+  {id:"where",title:"where", text: "wheretext", working: true},
+  {id:"why",title:"why", edges:["where", "what"], text: "whytext", working: true},
+  {id:"how",title:"how", edges:["who"], text: "howtext", working: false}
 ];
 
 var noteIds = function(){
@@ -43,13 +44,40 @@ $(document).ready(function () {
     // console.log(Mustache.to_html(noteListTemplate, {notes: ns}))
     $("#menu")
       .empty()
-      .append(Mustache.to_html(noteListTemplate, {notes: ns}))
+      .append(Mustache.to_html(noteListTemplate, {notes: ns}));
 
     $('.note').bind('click', function () {
       // console.log(this)
-      currentDoc = this.id;
-      editable.innerHTML = activeNotes[currentDoc].text
+      var currentDoc = this.id;
+      editable.innerHTML = activeNotes
+        .filter(function(d){return d.id == currentDoc;})[0]
+        .text
     });
+
+    updateWorkingStatus(ns)
+  }
+
+  var updateWorkingStatus = function(ns){
+    var workingSet = {};
+    ns.filter(function(n){return n.working;})
+      .forEach(function(n){workingSet[n.id] = true;});
+    var archiveSet = {};
+    ns.filter(function(n){return !n.working;})
+      .forEach(function(n){archiveSet[n.id] = true;});
+
+    $('.note').filter(function(){
+      return this.id in workingSet;
+    }).each(function(){
+      $("#working-notes")
+        .append($(this).parent());
+    })
+
+    $('.note').filter(function(){
+      return this.id in archiveSet;
+    }).each(function(){
+      $("#archived-notes")
+        .append($(this).parent());
+    })
   }
 
   var renderQuestionView = function (question) {
