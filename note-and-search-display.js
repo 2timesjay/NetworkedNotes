@@ -89,7 +89,7 @@ $(document).ready(function () {
     $('.add-control').bind("click", function () {
       // console.log("Clicked on Add To Canvas");
       var newDocId = selectedQuestion.id 
-      var newNote = {id: newDocId, title: newDocId,text:newDocId+"text"}
+      var newNote = {id: newDocId, title: newDocId,text:newDocId+"text", working: true}
       activeNotes.push(newNote)
       renderNoteList(activeNotes)
       var newDocId = newDocId; 
