@@ -46,7 +46,7 @@ var graph = {
   ]
 };
 
-var indexer = {};
+var indexer = {};//Chronicles add order(?)
 
 //Transforms Object-format activeNotes into
 //a new graph. This will reset everything even
@@ -124,8 +124,10 @@ var addNode = function(note){
 }
 
 var addEdge = function(sourceId, targetId){
-  var sourceIndex = indexer[sourceId];
-  var targetIndex = indexer[targetId];
+  var source = graph.nodes.filter(function(d){return d.id == sourceId;})
+  var target = graph.nodes.filter(function(d){return d.id == targetId;})
+  var sourceIndex = graph.nodes.indexOf(source[0]);
+  var targetIndex = graph.nodes.indexOf(target[0]);
   if(graph.edges.filter(function(d){
       return (d.source.id == sourceId && d.target.id == targetId)
         || (d.source.id == targetId && d.target.id == sourceId);
@@ -133,6 +135,15 @@ var addEdge = function(sourceId, targetId){
     console.log(sourceIndex+" to "+targetIndex);
     graph.edges.push({source: sourceIndex, target:targetIndex, line: 0});
   }
+}
+
+function spliceLinksForNode(node) {
+  var toSplice = graph.edges.filter(function(l) {
+    return (l.source === node || l.target === node);
+  });
+  toSplice.forEach(function(l) {
+    graph.edges.splice(graph.edges.indexOf(l), 1);
+  });
 }
 
 // TODO: change to handle nodes that have been modified
@@ -154,7 +165,7 @@ var force = d3.layout.force()
            .on("tick",tick)
            .start();
 
-var colors = d3.scale.category10();
+var colors = d3.scale.category20();
 
 //Create SVG element
 var svg = d3.select("#graphic")
@@ -220,7 +231,7 @@ var selectNode = function(node){
   // if(node == null){selected_node = null; return;}
   selected_node = node;
   circle.selectAll('circle')
-     .style('stroke', function(d) { return (d === selected_node)? "#000" : d3.rgb(colors(d.id)).darker().toString(); })
+     .style('stroke', function(d) { return (d === selected_node)? "#000" : d3.rgb(colors(indexer[d.id])).darker().toString(); })
 }
 
 var dblclickNode = function(node){
@@ -231,7 +242,7 @@ var dblclickNode = function(node){
     dblclick_node.fixed = !dblclick_node.fixed;
   }
   circle.selectAll('circle')
-    .style('fill', function(d) { return (d.fixed) ? d3.rgb(colors(d.id)).darker().darker().toString() : colors(d.id); })
+    .style('fill', function(d) { return (d.fixed) ? d3.rgb(colors(indexer[d.id])).darker().darker().toString() : colors(indexer[d.id]); })
 }
 
 function resetMouseVars() {
@@ -286,13 +297,13 @@ function updateCanvas(){
 
   // add new nodes
   var g = circle.enter().append('svg:g');
-  console.log(g);
+  // console.log(g);
 
   g.append("svg:circle")    
     .attr('class', 'node')
     .attr('r', 12)
-    .style('fill', function(d) { return colors(d.id); })
-    .style('stroke', function(d) { return d3.rgb(colors(d.id)).darker().toString(); })
+    .style('fill', function(d) { return colors(indexer[d.id]); })
+    .style('stroke', function(d) { return d3.rgb(colors(indexer[d.id])).darker().toString(); })
     .on('mouseover', function(d) {
       // if(!mousedown_node || d === mousedown_node) return;
       // enlarge target node
@@ -405,6 +416,72 @@ function mouseup() {
   // clear mouse event vars
   resetMouseVars();
 }
+
+function keydown() {
+  console.log("keydown event "+d3.event.keyCode);
+  // d3.event.preventDefault();
+
+  if(lastKeyDown !== -1) return;
+  lastKeyDown = d3.event.keyCode;
+
+  // d
+  if(d3.event.keyCode === 68) {
+    circle.call(force.drag);
+    svg.classed('draggable', true);
+  }
+
+  if(!selected_node && !selected_edge) return;
+  switch(d3.event.keyCode) {
+    case 8: // backspace
+    case 46: // delete
+      if(selected_node) {
+        graph.nodes.splice(graph.nodes.indexOf(selected_node), 1);
+        spliceLinksForNode(selected_node);
+        var notename = selected_node.title;
+      } else if(selected_edge) {
+        graph.edges.splice(graph.edges.indexOf(selected_edge), 1);
+      }
+      selectNode(null);
+      selectNode(null);
+      updateCanvas();
+      break;
+    case 66: // B
+      if(selected_edge) {
+        // set link direction to both left and right
+        selected_edge.left = true;
+        selected_edge.right = true;
+      }
+      updateCanvas();
+      break;
+    case 67: // C
+      if(selected_edge) {
+        // Increment line membership
+        selected_edge.line++
+      }
+      updateCanvas();
+      break;
+    case 76: // L
+      if(selected_edge) {
+        // set link direction to left only
+        selected_edge.left = true;
+        selected_edge.right = false;
+      }
+      updateCanvas();
+      break;
+  }
+}
+
+function keyup() {
+  lastKeyDown = -1;
+
+  // ctrl
+  if(d3.event.keyCode === 68) {
+    circle
+      .on('mousedown.drag', null)
+      .on('touchstart.drag', null);
+    svg.classed('draggable', false);
+  }
+}
       
 //External node update; works with svg:g
 var updateNode = function() {
@@ -455,3 +532,6 @@ svg.classed('edit', true)
   .on('mousedown', mousedown)
   .on('mousemove', mousemove)
   .on('mouseup', mouseup);
+d3.select(window)
+  .on('keydown', keydown)
+  .on('keyup', keyup);
