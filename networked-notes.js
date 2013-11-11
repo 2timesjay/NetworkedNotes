@@ -492,7 +492,41 @@ var updateNode = function() {
 
 //Every time the simulation "ticks", this will be called
 function tick() {
-  // svg:path version
+  //Octoforce rotates edges around their midpoint towards
+  //The nearest octilinear direction
+  var k = 0.1;
+  var directions = octilinear;
+  path.attr('d', function(d) { 
+    // discover the closest octilinear direction (dir is
+    // the orthonormal vector for that direction), and then
+    // calculate the new link by rotating around the centroid
+    // to align with that direction.)
+    var v = vec2(d.source, d.target);
+    // XXX how to stop overlapping?  nudging the edge too far is
+    // not stable...
+    // XXX this should respect friction
+    var dir = maxr(directions, function(x) {return dot(x,v)});
+    // XXX refactor me, extra lines for handling 'fixed' nodes
+    if (d.source.fixed & 1) {
+      var center = vec(d.source);
+      var ray = scale(norm(v), dir);
+      d.target.x += (center[0] + ray[0] - d.target.x) * k;
+      d.target.y += (center[1] + ray[1] - d.target.y) * k;
+    } else if (d.target.fixed & 1) {
+      var center = vec(d.target);
+      var ray = scale(norm(v), dir);
+      d.source.x += (center[0] - ray[0] - d.source.x) * k;
+      d.source.y += (center[1] - ray[1] - d.source.y) * k;
+    } else {
+      var center = centroid([vec(d.source), vec(d.target)]);
+      var ray = scale(norm(v)/2, dir);
+      d.source.x += (center[0] - ray[0] - d.source.x) * k;
+      d.source.y += (center[1] - ray[1] - d.source.y) * k;
+      d.target.x += (center[0] + ray[0] - d.target.x) * k;
+      d.target.y += (center[1] + ray[1] - d.target.y) * k;
+    }
+  });
+
   // draw directed edges with proper padding from node centers
   path.attr('d', function(d) {
     var deltaX = d.target.x - d.source.x,
@@ -508,6 +542,19 @@ function tick() {
         targetY = d.target.y - (targetPadding * normY);
     return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
   });
+
+  //Node monoforce constraint: order by index along x
+  var k = 0.1;
+  var i;
+  for (i = 0; i < graph.nodes.length - 1; i++) {
+    var begin = graph.nodes[i];
+    var end = graph.nodes[i+1];
+    if (begin.x > end.x) {
+      var delta = begin.x - end.x;
+      begin.x -= delta/2 * k;
+      end.x += delta/2 * k;
+    }
+  }
 
   //draw nodes
   circle.attr('transform', function(d) {
