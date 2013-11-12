@@ -26,8 +26,8 @@ var noteIds = function(){
   return activeNotes.map(function(note){return note.id;})
 }
 
-
 $(document).ready(function () {
+  var editingId = activeNotes[0].id;
 
   // load view templates
   var questionViewTemplate = $("#question-view-template").text()
@@ -52,9 +52,13 @@ $(document).ready(function () {
     $('.note').bind('click', function () {
       // console.log(this)
       var currentDoc = this.id;
+      activeNotes
+        .filter(function(d){return d.id == editingId;})[0]
+        .text = editable.innerHTML;
       editable.innerHTML = activeNotes
         .filter(function(d){return d.id == currentDoc;})[0]
         .text
+      editingId = currentDoc;
     });
 
     updateWorkingStatus(ns)
