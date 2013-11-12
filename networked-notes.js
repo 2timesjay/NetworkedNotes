@@ -22,6 +22,7 @@ var graph = {
 };
 
 var indexer = {};//Chronicles add order(?)
+var workingSet = {};
 
 //Transforms Object-format activeNotes into
 //a new graph. This will reset everything even
@@ -69,47 +70,101 @@ var refreshGraph = function(){
   graph.edges.length = 0;
   graph.edges.push.apply(graph.edges,newGraph.edges);
 }
-refreshGraph();
+// refreshGraph();
 
 //Updates graph from activeNotes not currently included
 //Gentler, doesn't reset all our forces.
 var addNode = function(note){
+  // console.log("adding as node: "+note);
+  //Create and push a new node
   if(!(note.id in indexer)){
-    //Create and push a new node
     indexer[note.id] = Object.keys(indexer).length;
-    var node = {id: note.id, title: note.title};
-    graph.nodes.push(node);
-    //Create and push it's indexed edges
-    // var sourceIndex = indexer[note.id]
-    // source = note
-    if(!("edges" in note)){ return []}
-    var potentialNodeEdges = note.edges;
-    var nodeEdges = potentialNodeEdges
-      .filter(function(pne){
-        return pne in indexer;
-      }).forEach(function(pne){
-        console.log("adding edge to "+pne)
-        // var targetIndex = indexer[pne];
-        addEdge(note.id,pne)
-        // return {source: sourceIndex, target:targetIndex};
-        // return {source: graph.nodes[sourceIndex],target: graph.nodes[targetIndex]}
-      });
-    // graph.edges.push.apply(graph.edges,node.edges); 
   }
+  var node = {id: note.id, title: note.title};
+  graph.nodes.push(node);
+}
+
+var addNodeEdges = function(note){
+  // console.log("adding edges from: "+note);
+  //Create and push it's indexed edges
+  var potentialNodeEdges = note.edges;
+  var nodeEdges = potentialNodeEdges
+    .filter(function(pne){
+      return pne in indexer;
+    }).forEach(function(ne){
+      // console.log("adding edge to "+pne)
+      // var targetIndex = indexer[pne];
+      addEdge(note.id,ne)
+    });
+}
+
+var removeNode = function(node){
+  activeNotes
+    .filter(function(n){
+      return n.id == node.id;})[0]
+    .working = false;
+
+  delete workingSet[node.id];
+
+  graph.nodes.splice(graph.nodes.indexOf(node), 1);
+  spliceLinksForNode(node);
 }
 
 var addEdge = function(sourceId, targetId){
+  //Check for edge in graph.edges
+  if(graph.edges.filter(function(d){
+      return ((d.source.id == sourceId && d.target.id == targetId)
+        || (d.source.id == targetId && d.target.id == sourceId));
+    }).length > 0){
+    return;
+  }
+  // console.log(graph.edges.length+" "+sourceId+" "+targetId);
+  // graph.edges.forEach(function(d){
+  //     console.log(d);
+  //     console.log(d.source);
+  //     console.log(d.target);
+  //     console.log("comparison: "+d.source.id +" "+d.target.id+"   "+sourceId+" "+targetId);
+  //     console.log("match: "+(d.source.id == sourceId && d.target.id == targetId)
+  //       || (d.source.id == targetId && d.target.id == sourceId));
+  //   })
+
+  //Check for edge in Note; pretty damn ugly
+  var sourceNote = activeNotes
+    .filter(function(n){
+      return n.id == sourceId;})[0]
+
+  //Add edge if not present in note
+  if(sourceNote
+    .edges.filter(function(e){
+      return e == targetId;}).length == 0){
+    sourceNote.edges.push(targetId)
+  }
+
+  //Do not add edges if source and target are not in workingSet
+  if(!(sourceId in workingSet && targetId in workingSet)){
+    return;
+  }
+
   var source = graph.nodes.filter(function(d){return d.id == sourceId;})
   var target = graph.nodes.filter(function(d){return d.id == targetId;})
   var sourceIndex = graph.nodes.indexOf(source[0]);
   var targetIndex = graph.nodes.indexOf(target[0]);
-  if(graph.edges.filter(function(d){
-      return (d.source.id == sourceId && d.target.id == targetId)
-        || (d.source.id == targetId && d.target.id == sourceId);
-    }).length == 0){
-    console.log(sourceIndex+" to "+targetIndex);
-    graph.edges.push({source: sourceIndex, target:targetIndex, line: 0});
-  }
+  // if(graph.edges.filter(function(d){
+  //     return (d.source.id == sourceId && d.target.id == targetId)
+  //       || (d.source.id == targetId && d.target.id == sourceId);
+  //   }).length == 0){
+    // console.log(sourceId+" to "+targetId);
+    graph.edges.push({source: sourceIndex, target:targetIndex, line: 0, right: true, left: false});
+  // }
+}
+
+var removeEdge = function(edge){
+  activeNotes
+    .filter(function(n){
+      return (n.id == edge.source.id);})[0]
+    .edges.splice(edge.target.id);
+
+  graph.edges.splice(graph.edges.indexOf(edge), 1);
 }
 
 function spliceLinksForNode(node) {
@@ -121,13 +176,35 @@ function spliceLinksForNode(node) {
   });
 }
 
-// TODO: change to handle nodes that have been modified
-// Simply adds nodes right now, can't deal with edges
-var updateGraph = function(){
-  var graphData = activeNotes
-  graphData
-    .filter(function(node){return !(node.id in indexer);})
+// Can only act one-at-a-time, for now. Otherwise
+// edges midway through the loop won't add if their target
+// node isn't present yet.
+// refreshGraph handles initialization
+// TODO: split into updateNodes and updateEdges
+var updateGraph = function(initialization){
+  var workingNotes = activeNotes
+    .filter(function(note){return note.working})
+
+  workingNotes.forEach(function(n){workingSet[n.id] = true})
+
+  //Add new nodes
+  workingNotes
+    .filter(function(note){return !(note.id in indexer)})
     .forEach(addNode);
+
+  //Re-add old nodes
+  var readdedNotes =  workingNotes
+    .filter(function(note){return (graph.nodes.filter(function(n){
+        return n.id == note.id}).length == 0)});
+  
+  readdedNotes.forEach(addNode);    
+
+  // console.log(readdedNotes);
+  //Add working nodes edges
+  if(initialization || (readdedNotes.length > 0)){
+    workingNotes
+      .forEach(addNodeEdges);
+  }
 }
 
 //Initialize a default force layout, using the nodes and edges in graph
@@ -135,8 +212,8 @@ var force = d3.layout.force()
            .nodes(graph.nodes)
            .links(graph.edges)
            .size([w, h])
-           .linkDistance([80])
-           .charge([-100])
+           .linkDistance([150])
+           .charge([-500])
            .on("tick",tick)
            .start();
 
@@ -231,11 +308,11 @@ function resetMouseVars() {
  * updateCanvas is an update loop that need 
  * only run on model updates.
  */
-function updateCanvas(){
-  updateGraph();
+function updateCanvas(initialization){
+  updateGraph(initialization);
 
   // path = path.data(graph.edges);
-  path = path.data(graph.edges,function(d){return d.source.id+"-"+d.target.id;});
+  path = path.data(graph.edges);//,function(d){return d.source.id+"-"+d.target.id;});
   
   // update existing edges
   path
@@ -347,7 +424,7 @@ function updateCanvas(){
 
   force.start()
 }
-updateCanvas();
+updateCanvas(true);
 
 function mousedown() {
   // prevent I-bar on drag
@@ -413,11 +490,12 @@ function keydown() {
     case 8: // backspace
     case 46: // delete
       if(selected_node) {
-        graph.nodes.splice(graph.nodes.indexOf(selected_node), 1);
-        spliceLinksForNode(selected_node);
-        var notename = selected_node.title;
+        //graph.nodes.splice(graph.nodes.indexOf(selected_node), 1);
+        //spliceLinksForNode(selected_node);
+        removeNode(selected_node);
       } else if(selected_edge) {
-        graph.edges.splice(graph.edges.indexOf(selected_edge), 1);
+        // graph.edges.splice(graph.edges.indexOf(selected_edge), 1);
+        removeEdge(selected_edge);
       }
       selectNode(null);
       selectNode(null);
@@ -472,7 +550,7 @@ var updateNode = function() {
 function tick() {
   //Octoforce rotates edges around their midpoint towards
   //The nearest octilinear direction
-  var k = 0.1;
+  var k = 0;
   var directions = octilinear;
   path.attr('d', function(d) { 
     // discover the closest octilinear direction (dir is
@@ -522,7 +600,7 @@ function tick() {
   });
 
   //Node monoforce constraint: order by index along x
-  var k = 0.1;
+  var k = 0;
   var i;
   for (i = 0; i < graph.nodes.length - 1; i++) {
     var begin = graph.nodes[i];

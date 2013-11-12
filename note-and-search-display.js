@@ -17,7 +17,7 @@ var idx= lunr(function () {
 var activeNotes = [ 
   {id:"who", title:"who", edges:["what"], text: "whotext", working: true},
   {id:"what",title:"what", edges:["where"], text: "whattext", working: true},
-  {id:"where",title:"where", text: "wheretext", working: true},
+  {id:"where",title:"where", edges:[], text: "wheretext", working: true},
   {id:"why",title:"why", edges:["where", "what"], text: "whytext", working: true},
   {id:"how",title:"how", edges:["who"], text: "howtext", working: false}
 ];
@@ -39,6 +39,9 @@ $(document).ready(function () {
       .append(Mustache.to_html(questionListTemplate, {questions: qs}))
   }
 
+  //Only updates on not addition, it looks like
+  //How can I update on working status change?
+  //Handlebarize?
   var renderNoteList = function (ns) {
     // $("#note-list-container")
     // console.log(Mustache.to_html(noteListTemplate, {notes: ns}))
@@ -88,16 +91,15 @@ $(document).ready(function () {
 
     $('.add-control').bind("click", function () {
       // console.log("Clicked on Add To Canvas");
-      var newDocId = selectedQuestion.id 
-      var newNote = {id: newDocId, title: newDocId,text:newDocId+"text", working: true}
-      activeNotes.push(newNote)
-      renderNoteList(activeNotes)
-      var newDocId = newDocId; 
-      // insert new node at point
-      // node = {id: ++lastNodeId, reflexive: false, name : newDocId};
-      // node.x = 100;
-      // node.y = 100;
-      // graph.nodes.push(node);
+      var addedId = selectedQuestion.id 
+      addedNote = activeNotes.filter(function(n){return n.id == addedId})
+      if(!addedNote.length){
+        var newNote = {id: addedId, title: addedId, edges: [], text:addedId+"text", working: true}
+        activeNotes.push(newNote)
+        renderNoteList(activeNotes)
+      }else{
+        addedNote[0].working = true;
+      }
       updateCanvas();
     });
   }
