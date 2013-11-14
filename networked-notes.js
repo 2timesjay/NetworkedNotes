@@ -24,6 +24,43 @@ var graph = {
 var indexer = {};//Chronicles add order(?)
 var workingSet = {};
 
+var saveGraph = function(){
+  localStorage.setItem('graph', JSON.stringify(graph));
+  localStorage.setItem('indexer', JSON.stringify(indexer));
+  localStorage.setItem('working', JSON.stringify(workingSet));}
+var loadGraph = function(){
+  loadAN();
+  loadedGraph = JSON.parse(localStorage.getItem('graph'));
+  graph.nodes.length = 0;
+  graph.nodes.push.apply(graph.nodes,loadedGraph.nodes);
+  graph.edges.length = 0;
+  loadedEdges = [];
+  loadedGraph.edges.forEach(function(e){
+    var source = graph.nodes.filter(function(d){return d.id == e.source.id;})
+    var target = graph.nodes.filter(function(d){return d.id == e.target.id;})
+    var sourceIndex = graph.nodes.indexOf(source[0]);
+    var targetIndex = graph.nodes.indexOf(target[0]);
+    loadedEdges.push({
+      source: sourceIndex, 
+      target: targetIndex, 
+      line: e.line,
+      left: e.left, 
+      right: e.right});
+  });
+  graph.edges.push.apply(graph.edges,loadedEdges);
+  indexer = JSON.parse(localStorage.getItem('indexer'));
+  working = JSON.parse(localStorage.getItem('working'));
+  //setupForces();
+}
+loadGraph();
+
+var saveLayout = function(){
+  localStorage.setItem('path-data',JSON.stringify(path.data()));
+  localStorage.setItem('circle-data',JSON.stringify(circle.data()));}
+
+// loadAN();
+// loadGraph();
+
 //Transforms Object-format activeNotes into
 //a new graph. This will reset everything even
 //if the update is incremental
@@ -218,41 +255,6 @@ var force = d3.layout.force()
 // var setupForces = function(){
 // }
 // setupForces();
-
-var saveGraph = function(){
-  localStorage.setItem('graph', JSON.stringify(graph));
-  localStorage.setItem('indexer', JSON.stringify(indexer));
-  localStorage.setItem('working', JSON.stringify(workingSet));}
-var loadGraph = function(){
-  loadedGraph = JSON.parse(localStorage.getItem('graph'));
-  graph.nodes.length = 0;
-  graph.nodes.push.apply(graph.nodes,loadedGraph.nodes);
-  graph.edges.length = 0;
-  loadedEdges = [];
-  loadedGraph.edges.forEach(function(e){
-    var source = graph.nodes.filter(function(d){return d.id == e.source.id;})
-    var target = graph.nodes.filter(function(d){return d.id == e.target.id;})
-    var sourceIndex = graph.nodes.indexOf(source[0]);
-    var targetIndex = graph.nodes.indexOf(target[0]);
-    loadedEdges.push({
-      source: sourceIndex, 
-      target: targetIndex, 
-      line: e.line,
-      left: e.left, 
-      right: e.right});
-  });
-  graph.edges.push.apply(graph.edges,loadedEdges);
-  indexer = JSON.parse(localStorage.getItem('indexer'));
-  working = JSON.parse(localStorage.getItem('working'));
-  //setupForces();
-}
-
-var saveLayout = function(){
-  localStorage.setItem('path-data',JSON.stringify(path.data()));
-  localStorage.setItem('circle-data',JSON.stringify(circle.data()));}
-
-// loadAN();
-// loadGraph();
 
 var colors = d3.scale.category20();
 
