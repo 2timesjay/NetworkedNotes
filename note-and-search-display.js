@@ -26,6 +26,11 @@ var noteIds = function(){
   return activeNotes.map(function(note){return note.id;})
 }
 
+var saveAN = function(){
+  localStorage.setItem('active-notes', JSON.stringify(activeNotes));}
+var loadAN = function(){
+  activeNotes = JSON.parse(localStorage.getItem('active-notes'));}
+
 $(document).ready(function () {
   var editingId = activeNotes[0].id;
 
@@ -61,7 +66,13 @@ $(document).ready(function () {
       editingId = currentDoc;
     });
 
-    updateWorkingStatus(ns)
+    updateWorkingStatus(ns);
+
+    // // Put activeNotes into storage
+    // localStorage.setItem('active-notes', JSON.stringify(activeNotes));
+    // // Retrieve activeNotes from storage
+    // var retrievedAN = localStorage.getItem('active-notes');
+    // console.log('activeNotes saved as: ', JSON.parse(retrievedAN));
   }
 
   var updateWorkingStatus = function(ns){
