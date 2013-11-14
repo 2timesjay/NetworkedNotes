@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>NN - Alpha</title>
+    <link rel="stylesheet" href="annotated-search.css">
+<!-- <script src="http://code.jquery.com/jquery-latest.min.js"></script> -->
+<!--     <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" /> -->
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script src="mustache.js" type="text/javascript" charset="utf-8"></script>
+    <script src="handlebars.js" type="text/javascript" charset="utf-8"></script>
+<!--     // <script src="h5utils.js"></script>-->
+    <script src="vector.js"></script> 
+    <script src="http://d3js.org/d3.v3.js"></script>
+    <script src="lunr.js" type="text/javascript" charset="utf-8"></script>
+    <script src
+    <script id="question-list-template" type="text/mustache">
+      <div>
+        <ul>
+          {{#questions}}
+            <li data-question-id="{{id}}">
+              <a href="#">{{title}}</a>
+            </li>
+          {{/questions}}
+        </ul>
+      </div>
+    </script>
+
+    <script id="note-list-template" type="text/mustache">
+      <div>
+        <div><h2>Working Set</h2></div>
+        <ul id="working-notes">
+          {{#notes}}
+            <li class="note-bullet">
+              <a class="note" id="{{id}}" href="#">{{title}}</a>
+            </li>
+          {{/notes}}
+        </ul>
+        <div><h2>Archived Set</h2></div>
+        <ul id="archived-notes">
+        </ul>
+      </div>
+    </script>
+
+    <script id="question-view-template" type="text/mustache">
+      <div>
+        <input type="button" class="add-control" value="Add to Canvas" />
+      </div>
+      <div>
+        <h1>{{id}}. {{title}}</h1>
+        <div>{{{body}}}</div>
+      </div>
+    </script>
+
+
+    <script src="annotated-search.js" type="text/javascript" charset="utf-8"></script>
+
+    <script>
+      $(function() {
+        $( "#tabs" ).tabs();
+      });
+    </script>
+  </head>
+
+  <body>
+<!--     <div id="heading"></div> -->
+    <div id="tabs">
+      <ul>
+        <li><a href="#tabs-1">Search and Results</a></li>
+        <li><a href="#tabs-2">Notes</a></li>
+        <li><a href="#tabs-3">Aenean lacinia</a></li>
+      </ul>
+      <div id="tabs-1">
+        <div id ="search">
+          <div class="controls">
+            <input type="search" id='search-control' placeholder="Search..."></input>
+            <a class="all" href="#">All</a>
+          </div>
+
+          <div class="questions">
+            <div id='question-list-container'></div>
+            <!--div id='add-control-container'>
+              <input type="button" class="addToCanvas" value="Add to Canvas" />
+            </div-->
+            <!-- <div class='question-view-container'></div> -->
+            <div class='pup'></div>
+          </div>  
+        </div>
+      </div>
+      <div id="tabs-2">
+        <div id="note-container">
+          <div id="header">
+            <h1 style="margin-bottom:0;">Note Container</h1>
+          </div>
+
+          <div id="menu">
+          </div>
+
+          <div id="editable" contentEditable="true" desigmode="on">
+            Content goes here
+          </div>
+
+          <div>
+            <input type="button" id="clear" value="Clear changes" />
+          </div>
+        
+          <div>
+            <span>Create Document</span>
+            <input type="text" id="create" value=""/>
+          </div>
+          <div class='pup'></div>
+        </div>
+      </div>
+      <div id="tabs-3">
+        <p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim commodo pellentesque. Praesent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
+        <p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at, semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra justo vitae neque. Praesent blandit adipiscing velit. Suspendisse potenti. Donec mattis, pede vel pharetra blandit, magna ligula faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque. Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean vehicula velit eu tellus interdum rutrum. Maecenas commodo. Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus hendrerit hendrerit.</p>
+      </div>
+    </div>
+
+    <div id="pup"></div>
+  </body>
+</html>

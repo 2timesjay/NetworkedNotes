@@ -1,0 +1,93 @@
+svg {
+  background-color: #FFF;
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+body {
+      background-color: #081f28;
+      color: #708284;
+      font-family: 'Helvetica Neue';
+      font-size: 12px;
+    }
+
+path.link {
+  fill: none;
+  stroke: #000;
+  stroke-width: 4px;
+  cursor: default;
+}
+
+svg:not(.active):not(.ctrl) path.link {
+  cursor: pointer;
+}
+
+path.link.selected {
+  stroke-dasharray: 10,2;
+}
+
+path.link.dragline {
+  pointer-events: none;
+}
+
+path.link.hidden {
+  stroke-width: 0;
+}
+
+circle.node {
+  stroke-width: 3.0px;
+  cursor: pointer;
+}
+
+text {
+  font: 12px sans-serif;
+  pointer-events: none;
+}
+
+text.id {
+  text-anchor: middle;
+  font-weight: bold;
+}
+
+#heading {
+      height: 100px;
+}
+
+#graphic {
+      margin : 50px;
+      float: left;
+}
+
+#question-list-container{
+  height: 300px;
+  overflow: auto;
+}
+
+#editable {
+  float:right;
+  width: 400px;
+  height: 200px;
+  overflow: auto;
+}
+
+/*#pup {
+  position:absolute;
+  z-index:200;
+  padding: 3px;
+  margin-left: 10px;
+  margin-top: 5px;
+  width: 600px;
+  border: 1px solid black;
+  background-color: #777;
+  color: white;
+  font-size: 0.95em;
+}*/
+
+.pup {
+  height: 300px;
+  overflow: auto;
+}
