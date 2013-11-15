@@ -3,8 +3,11 @@ update.html*
 dste.*
 networked-notes-backup.js
 tabs.*
-dag.*
+dag.html
+dag.js
+dag.js~
 graph.json*
 netNotes.html*
 index.html*
 handlebars.js~
+ko-test.*

@@ -57,11 +57,6 @@ text.id {
       height: 100px;
 }
 
-#graphic {
-      margin : 50px;
-      float: left;
-}
-
 #question-list-container{
   height: 300px;
   overflow: auto;

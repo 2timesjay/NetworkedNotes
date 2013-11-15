@@ -57,6 +57,10 @@ $(document).ready(function () {
     $('.note').bind('click', function () {
       // console.log(this)
       var currentDoc = this.id;
+      selectedQuestion = questions.filter(function (question) {
+        return (question.id == currentDoc)
+      })[0]
+      renderQuestionView(selectedQuestion)
       activeNotes
         .filter(function(d){return d.id == editingId;})[0]
         .text = editable.innerHTML;
@@ -99,6 +103,7 @@ $(document).ready(function () {
   }
 
   var renderQuestionView = function (question) {
+    // console.log(question);
     $('.pup')
       .empty()
       .append(Mustache.to_html(questionViewTemplate, question))
@@ -115,7 +120,7 @@ $(document).ready(function () {
       }else{
         addedNote[0].working = true;
       }
-      updateCanvas();
+      // updateCanvas();
     });
   }
 
