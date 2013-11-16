@@ -52,13 +52,10 @@ var loadGraph = function(){
   working = JSON.parse(localStorage.getItem('working'));
   //setupForces();
 }
-loadGraph();
 
 var saveLayout = function(){
   localStorage.setItem('path-data',JSON.stringify(path.data()));
   localStorage.setItem('circle-data',JSON.stringify(circle.data()));}
-
-// loadAN();
 // loadGraph();
 
 //Transforms Object-format activeNotes into

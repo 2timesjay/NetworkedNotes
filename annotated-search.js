@@ -22,6 +22,8 @@ var activeNotes = [
   {id:"how",title:"how", edges:["who"], text: "howtext", working: false}
 ];
 
+var selectedNote = "who";
+
 var noteIds = function(){
   return activeNotes.map(function(note){return note.id;})
 }
@@ -57,9 +59,11 @@ $(document).ready(function () {
     $('.note').bind('click', function () {
       // console.log(this)
       var currentDoc = this.id;
-      selectedQuestion = questions.filter(function (question) {
-        return (question.id == currentDoc)
-      })[0]
+      selectedNote = currentDoc;
+      // selectedQuestion = questions.filter(function (question) {
+      //   return (question.id == currentDoc)
+      // })[0]
+      selectedQuestion = _.findWhere(questions, {id: selectedNote} )
       renderQuestionView(selectedQuestion)
       activeNotes
         .filter(function(d){return d.id == editingId;})[0]
