@@ -63,7 +63,7 @@ text.id {
 }
 
 #editable {
-  float:right;
+  /*float:right;*/
   width: 400px;
   height: 200px;
   overflow: auto;

@@ -4,6 +4,7 @@
 
 
 var selectedQuestion = -1
+var selectedNote = ko.observable("4464")
 
 var idx= lunr(function () {
   this.field('title', {boost: 10})
@@ -21,12 +22,6 @@ var activeNotes = [
   {id:"why",title:"why", edges:["where", "what"], text: "whytext", working: true},
   {id:"how",title:"how", edges:["who"], text: "howtext", working: false}
 ];
-
-var selectedNote = "who";
-
-var noteIds = function(){
-  return activeNotes.map(function(note){return note.id;})
-}
 
 var saveAN = function(){
   localStorage.setItem('active-notes', JSON.stringify(activeNotes));}
@@ -59,12 +54,13 @@ $(document).ready(function () {
     $('.note').bind('click', function () {
       // console.log(this)
       var currentDoc = this.id;
-      selectedNote = currentDoc;
+      selectedNote(currentDoc);
       // selectedQuestion = questions.filter(function (question) {
       //   return (question.id == currentDoc)
       // })[0]
-      selectedQuestion = _.findWhere(questions, {id: selectedNote} )
-      renderQuestionView(selectedQuestion)
+      selectedQuestion = _.findWhere(questions, {id: selectedNote()} )
+
+      // renderQuestionView(selectedQuestion)
       activeNotes
         .filter(function(d){return d.id == editingId;})[0]
         .text = editable.innerHTML;
@@ -104,6 +100,10 @@ $(document).ready(function () {
       $("#archived-notes")
         .append($(this).parent());
     })
+  }
+
+  var noteIds = function(){
+    return activeNotes.map(function(note){return note.id;})
   }
 
   var renderQuestionView = function (question) {
@@ -154,6 +154,39 @@ $(document).ready(function () {
       }
     })
 
+    // Here's my data model
+
+    // MyNote = function(selected){
+    //   this.displayNote = ko.observable(_.findWhere(questions, {id: selected} ) || {id:"",title:"",body:""}); 
+    //   this.changeNote = function(newSelected){
+
+    //   } 
+    // }
+
+    ViewModel = function(selected) {
+      //selected is selectedNote, a ko.observable
+      this.displayNote = ko.computed(function(){
+        console.log("finding "+selected())
+        // console.log(_.include(_.pluck(questions,'id'),selected().toString()))
+        console.log(_.findWhere(questions, {id: selected().toString()} ) || {id:"",title:"",body:""});
+        return _.findWhere(questions, {id: selected().toString()} ) || {id:"",title:"",body:""};
+      },this);
+      console.log(this.displayNote())
+      // this.displayNote = _.findWhere(questions, {id: selectedNote} ) || {id:"",title:"",body:""};
+      // console.log(this.displayNote);
+      // this.id = ko.computed(function(){
+      //   return this.displayNote().id
+      // });
+      // this.title = ko.computed(function(){
+      //   return this.displayNote().title
+      // });
+      // this.body = ko.computed(function(){
+      //   return this.displayNote().body
+      // });
+    };
+     
+    ko.applyBindings(new ViewModel(selectedNote)); // This makes Knockout get to work
+
     questions.map(function(question){idx.add(question);})
     renderQuestionList(questions)
     // renderQuestionView(questions[0],$('#question-view-container'))
@@ -190,11 +223,12 @@ $(document).ready(function () {
     $("#question-list-container").delegate('li', 'click', function () {
       var li = $(this)
       var id = li.data('question-id')
+      selectedNote(id);
 
       selectedQuestion = questions.filter(function (question) {
         return (question.id == id)
       })[0]
-      renderQuestionView(selectedQuestion)
+      // renderQuestionView(selectedQuestion)
       // console.log(selectedQuestion.id)
     })
   })
