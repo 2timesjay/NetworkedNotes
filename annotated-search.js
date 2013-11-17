@@ -58,7 +58,7 @@ $(document).ready(function () {
       // selectedQuestion = questions.filter(function (question) {
       //   return (question.id == currentDoc)
       // })[0]
-      selectedQuestion = _.findWhere(questions, {id: selectedNote()} )
+      // selectedQuestion = _.findWhere(questions, {id: selectedNote()} )
 
       // renderQuestionView(selectedQuestion)
       activeNotes
