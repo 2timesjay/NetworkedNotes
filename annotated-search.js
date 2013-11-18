@@ -1,10 +1,28 @@
-// set up the index, specifying that we want to index the title, tags and body fields of documents.
-//var idx
+/**
+Annotated-search is where I prototype a refactor and improvement of
+the search and note creation/management functions. It should be entirely
+or almost entirely compatible with the un-refactored graph module, and
+provide a clean interface. I will eventually separate the search module
+from the note module.
 
+There are three classes of notes, the core object: 
+document notes: a note based on the original document.
+child notes: a note about one of the documents; 
+  a child of it's corresponding document note
+free notes: a note without an associated document.
 
+relation between document notes and their children:
+-A child is only considered working if its parent is too.
+-A child displays its parent's text in parallel if it is displayed
+-A child can be associated with a particular excerpt in the parent
+-A child has the same date and ordering as its parent for display purposes.
+-A child knows its parent
+
+  */
 
 var selectedQuestion = -1
-var selectedNote = ko.observable("4464")
+//selectedDoc is a ko.observable
+var selectedDoc = ko.observable("4464")
 
 var idx= lunr(function () {
   this.field('title', {boost: 10})
@@ -12,15 +30,61 @@ var idx= lunr(function () {
   this.ref('id')
 })
 
+//Ripped form Stackoverflow
+function genRandId(){
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
+//Note corresponding to a primary document
+function docNote(docId,title,text){
+  var note = {}
+  note.id = docId;//Id of the note: docId + a random string
+  note.title = title;//Title of the note
+  note.edges = ko.observableArray([]);//Edges from the note to other notes
+  note.text = text;
+  note.working = ko.observable(false);
+  return note;
+}
+
+//Note associated with a document; child of corresponding docNote
+function childNote(parentId, title, edges, text, working){
+  var note = {}
+  note.parent = parentId
+  note.id = parentId + genRandId();//Id of the note: docId + a random string
+  note.title = ko.observable(title);//Title of the note
+  note.edges = ko.observableArray(edges);//Edges from the note to other notes
+  note.text = ko.observable(text);
+  note.working = ko.observable(working);
+  return note;
+}
+
+//Note without associated document; free-floating
+function freeNote(id, title, edges, text, working){
+  var note = {}
+  note.id = id;//Id of the note: docId + a random string
+  note.title = ko.observable(title);//Title of the note
+  note.edges = ko.observableArray(edges);//Edges from the note to other notes
+  note.text = ko.observable(text);
+  note.working = ko.observable(working);
+  return note;
+}
+
 // activeNotes is the primary data location, or data model.
 // Notes, question-view(slightly) and canvas should treat this as primary.
 // work closely with this.
 var activeNotes = [ 
-  {id:"who", title:"who", edges:["what"], text: "whotext", working: true},
-  {id:"what",title:"what", edges:["where"], text: "whattext", working: true},
-  {id:"where",title:"where", edges:[], text: "wheretext", working: true},
-  {id:"why",title:"why", edges:["where", "what"], text: "whytext", working: true},
-  {id:"how",title:"how", edges:["who"], text: "howtext", working: false}
+  docNote(selectedDoc, "Placeholder", "Placeholder text"),
+  childNote(selectedDoc, "who", ["what"], "who text", true),
+  childNote(selectedDoc, "what", ["where"], "what text", true),
+  childNote(selectedDoc, "where", [], "where text", true),
+  childNote(selectedDoc, "why", ["where","what"], "why text", true),
+  childNote(selectedDoc, "how", ["who"], "how text", false)
 ];
 
 var saveAN = function(){
@@ -41,9 +105,6 @@ $(document).ready(function () {
       .append(Mustache.to_html(questionListTemplate, {questions: qs}))
   }
 
-  //Only updates on not addition, it looks like
-  //How can I update on working status change?
-  //Handlebarize?
   var renderNoteList = function (ns) {
     // $("#note-list-container")
     // console.log(Mustache.to_html(noteListTemplate, {notes: ns}))
@@ -54,11 +115,11 @@ $(document).ready(function () {
     $('.note').bind('click', function () {
       // console.log(this)
       var currentDoc = this.id;
-      selectedNote(currentDoc);
+      selectedDoc(currentDoc);
       // selectedQuestion = questions.filter(function (question) {
       //   return (question.id == currentDoc)
       // })[0]
-      // selectedQuestion = _.findWhere(questions, {id: selectedNote()} )
+      // selectedQuestion = _.findWhere(questions, {id: selectedDoc()} )
 
       // renderQuestionView(selectedQuestion)
       activeNotes
@@ -106,28 +167,6 @@ $(document).ready(function () {
     return activeNotes.map(function(note){return note.id;})
   }
 
-  var renderQuestionView = function (question) {
-    // console.log(question);
-    $('.pup')
-      .empty()
-      .append(Mustache.to_html(questionViewTemplate, question))
-    // popupSelector.html($('#pup'))
-
-    $('.add-control').bind("click", function () {
-      // console.log("Clicked on Add To Canvas");
-      var addedId = selectedQuestion.id 
-      addedNote = activeNotes.filter(function(n){return n.id == addedId})
-      if(!addedNote.length){
-        var newNote = {id: addedId, title: addedId, edges: [], text:addedId+"text", working: true}
-        activeNotes.push(newNote)
-        renderNoteList(activeNotes)
-      }else{
-        addedNote[0].working = true;
-      }
-      // updateCanvas();
-    });
-  }
-
   profile = function (term) {
     console.profile()
     idx.search(term)
@@ -163,16 +202,17 @@ $(document).ready(function () {
     //   } 
     // }
 
+    //Finds current displayNote based on observable selected; here selectedDoc();
     ViewModel = function(selected) {
-      //selected is selectedNote, a ko.observable
+      //selected is selectedDoc, a ko.observable
       this.displayNote = ko.computed(function(){
-        console.log("finding "+selected())
+        // console.log("finding "+selected())
         // console.log(_.include(_.pluck(questions,'id'),selected().toString()))
-        console.log(_.findWhere(questions, {id: selected().toString()} ) || {id:"",title:"",body:""});
+        // console.log(_.findWhere(questions, {id: selected().toString()} ) || {id:"",title:"",body:""});
         return _.findWhere(questions, {id: selected().toString()} ) || {id:"",title:"",body:""};
       },this);
-      console.log(this.displayNote())
-      // this.displayNote = _.findWhere(questions, {id: selectedNote} ) || {id:"",title:"",body:""};
+      // console.log(this.displayNote())
+      // this.displayNote = _.findWhere(questions, {id: selectedDoc} ) || {id:"",title:"",body:""};
       // console.log(this.displayNote);
       // this.id = ko.computed(function(){
       //   return this.displayNote().id
@@ -184,8 +224,23 @@ $(document).ready(function () {
       //   return this.displayNote().body
       // });
     };
+
+
+    $('.add-control').bind("click", function () {
+        // console.log("Clicked on Add To Canvas");
+        var addedId = selectedDoc(); 
+        addedNote = activeNotes.filter(function(n){return n.id == addedId})
+        if(!addedNote.length){
+          doc = _.findWhere(questions, {id: addedId.toString()} )
+          newNote = docNote(doc.id,doc.title,doc.body)
+          activeNotes.push(newNote)
+          renderNoteList(activeNotes)
+        }else{
+          addedNote[0].working(true);
+        }
+      });
      
-    ko.applyBindings(new ViewModel(selectedNote)); // This makes Knockout get to work
+    ko.applyBindings(new ViewModel(selectedDoc)); // This makes Knockout get to work
 
     questions.map(function(question){idx.add(question);})
     renderQuestionList(questions)
@@ -223,7 +278,7 @@ $(document).ready(function () {
     $("#question-list-container").delegate('li', 'click', function () {
       var li = $(this)
       var id = li.data('question-id')
-      selectedNote(id);
+      selectedDoc(id);
 
       selectedQuestion = questions.filter(function (question) {
         return (question.id == id)
