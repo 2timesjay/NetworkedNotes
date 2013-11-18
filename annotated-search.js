@@ -21,16 +21,18 @@ relation between document notes and their children:
   */
 
 var selectedQuestion = -1
-//selectedDoc is a ko.observable
+/** selectedDoc is a ko.observable
+It is a global variable controlling the doc displayed in .pup */
 var selectedDoc = ko.observable("4464")
 
+/** lunr index, simple client-side searching */
 var idx= lunr(function () {
   this.field('title', {boost: 10})
   this.field('content')
   this.ref('id')
 })
 
-//Ripped form Stackoverflow
+//Ripped from Stackoverflow
 function genRandId(){
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -75,95 +77,34 @@ function freeNote(id, title, edges, text, working){
   return note;
 }
 
-// activeNotes is the primary data location, or data model.
-// Notes, question-view(slightly) and canvas should treat this as primary.
-// work closely with this.
-var activeNotes = [ 
+/** activeNotes is the primary data location, or data model.
+Notes, doc-view(slightly) and canvas should treat this as primary.
+work closely with this. Notes have observable fields. */
+var activeNotes = ko.observableArray([ 
   docNote(selectedDoc, "Placeholder", "Placeholder text"),
-  childNote(selectedDoc, "who", ["what"], "who text", true),
-  childNote(selectedDoc, "what", ["where"], "what text", true),
-  childNote(selectedDoc, "where", [], "where text", true),
-  childNote(selectedDoc, "why", ["where","what"], "why text", true),
-  childNote(selectedDoc, "how", ["who"], "how text", false)
-];
+  childNote(selectedDoc(), "who", ["what"], "who text", true),
+  childNote(selectedDoc(), "what", ["where"], "what text", true),
+  childNote(selectedDoc(), "where", [], "where text", true),
+  childNote(selectedDoc(), "why", ["where","what"], "why text", true),
+  childNote(selectedDoc(), "how", ["who"], "how text", false)
+]);
 
+//Save and load activeNotes
 var saveAN = function(){
   localStorage.setItem('active-notes', JSON.stringify(activeNotes));}
 var loadAN = function(){
   activeNotes = JSON.parse(localStorage.getItem('active-notes'));}
 
+
 $(document).ready(function () {
-  var editingId = activeNotes[0].id;
+  var editingId = activeNotes()[0].id;
 
   // load view templates
   var questionListTemplate = $("#question-list-template").text()
-  var noteListTemplate = $("#note-list-template").text()
   var renderQuestionList = function (qs) {
     $("#question-list-container")
       .empty()
       .append(Mustache.to_html(questionListTemplate, {questions: qs}))
-  }
-
-  var renderNoteList = function (ns) {
-    // $("#note-list-container")
-    // console.log(Mustache.to_html(noteListTemplate, {notes: ns}))
-    $("#menu")
-      .empty()
-      .append(Mustache.to_html(noteListTemplate, {notes: ns}));
-
-    $('.note').bind('click', function () {
-      // console.log(this)
-      var currentDoc = this.id;
-      selectedDoc(currentDoc);
-      // selectedQuestion = questions.filter(function (question) {
-      //   return (question.id == currentDoc)
-      // })[0]
-      // selectedQuestion = _.findWhere(questions, {id: selectedDoc()} )
-
-      // renderQuestionView(selectedQuestion)
-      activeNotes
-        .filter(function(d){return d.id == editingId;})[0]
-        .text = editable.innerHTML;
-      editable.innerHTML = activeNotes
-        .filter(function(d){return d.id == currentDoc;})[0]
-        .text
-      editingId = currentDoc;
-    });
-
-    updateWorkingStatus(ns);
-
-    // // Put activeNotes into storage
-    // localStorage.setItem('active-notes', JSON.stringify(activeNotes));
-    // // Retrieve activeNotes from storage
-    // var retrievedAN = localStorage.getItem('active-notes');
-    // console.log('activeNotes saved as: ', JSON.parse(retrievedAN));
-  }
-
-  var updateWorkingStatus = function(ns){
-    var workingSet = {};
-    ns.filter(function(n){return n.working;})
-      .forEach(function(n){workingSet[n.id] = true;});
-    var archiveSet = {};
-    ns.filter(function(n){return !n.working;})
-      .forEach(function(n){archiveSet[n.id] = true;});
-
-    $('.note').filter(function(){
-      return this.id in workingSet;
-    }).each(function(){
-      $("#working-notes")
-        .append($(this).parent());
-    })
-
-    $('.note').filter(function(){
-      return this.id in archiveSet;
-    }).each(function(){
-      $("#archived-notes")
-        .append($(this).parent());
-    })
-  }
-
-  var noteIds = function(){
-    return activeNotes.map(function(note){return note.id;})
   }
 
   profile = function (term) {
@@ -177,8 +118,6 @@ $(document).ready(function () {
     idx.search(term)
     console.timeEnd('search')
   }
-
-  renderNoteList(activeNotes)
 
   // load the example data
   $.getJSON('short.json', function (data) {
@@ -202,27 +141,17 @@ $(document).ready(function () {
     // }
 
     //Finds current displayNote based on observable selected; here selectedDoc();
-    ViewModel = function(selected) {
+    displayNoteViewModel = function(selected) {
       //selected is selectedDoc, a ko.observable
       this.displayNote = ko.computed(function(){
-        // console.log("finding "+selected())
-        // console.log(_.include(_.pluck(questions,'id'),selected().toString()))
-        // console.log(_.findWhere(questions, {id: selected().toString()} ) || {id:"",title:"",body:""});
         return _.findWhere(questions, {id: selected().toString()} ) || {id:"",title:"",body:""};
       },this);
-      // console.log(this.displayNote())
-      // this.displayNote = _.findWhere(questions, {id: selectedDoc} ) || {id:"",title:"",body:""};
-      // console.log(this.displayNote);
-      // this.id = ko.computed(function(){
-      //   return this.displayNote().id
-      // });
-      // this.title = ko.computed(function(){
-      //   return this.displayNote().title
-      // });
-      // this.body = ko.computed(function(){
-      //   return this.displayNote().body
-      // });
     };
+     
+    ko.applyBindings(new displayNoteViewModel(selectedDoc),
+     $('.pup')[0]); // This makes Knockout get to work
+    ko.applyBindings(new displayNoteViewModel(selectedDoc),
+     $('.pup')[1]); // This makes Knockout get to work
 
 
     $('.add-control').bind("click", function () {
@@ -233,13 +162,16 @@ $(document).ready(function () {
           doc = _.findWhere(questions, {id: addedId.toString()} )
           newNote = docNote(doc.id,doc.title,doc.body)
           activeNotes.push(newNote)
-          renderNoteList(activeNotes)
         }else{
           addedNote[0].working(true);
         }
       });
-     
-    ko.applyBindings(new ViewModel(selectedDoc)); // This makes Knockout get to work
+
+    noteListViewModel = function(inputNoteList){
+      this.noteList = inputNoteList;
+    }
+
+    ko.applyBindings(new noteListViewModel(activeNotes),$('#menu')[0]);
 
     questions.map(function(question){idx.add(question);})
     renderQuestionList(questions)
