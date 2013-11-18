@@ -96,7 +96,6 @@ $(document).ready(function () {
   var editingId = activeNotes[0].id;
 
   // load view templates
-  var questionViewTemplate = $("#question-view-template").text()
   var questionListTemplate = $("#question-list-template").text()
   var noteListTemplate = $("#note-list-template").text()
   var renderQuestionList = function (qs) {
