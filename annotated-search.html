@@ -15,7 +15,7 @@
     <script src="http://d3js.org/d3.v3.js"></script>
     <script src="lunr.js" type="text/javascript" charset="utf-8"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.0.0/knockout-min.js"></script>
-<!--     // <script src="http://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.js"></script> -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
     <script id="question-list-template" type="text/mustache">
       <div>
@@ -90,10 +90,14 @@
           </div>
 
           <div id="menu">
+            <div><h2>Working Set</h2></div>
             <ul id="working-notes" data-bind="foreach: noteList">
               <li>
-                <a class="note" href='#' data-bind="text: title, attr: {'id' : id}"> </a>
+                <a class="note" href='#' data-bind="text: title, attr: {'id' : id}, event: { click : $parent.editNote}"> </a>
               </li>
+            </ul>
+            <div><h2>Archived Set</h2></div>
+            <ul id="archived-notes">
             </ul>
           </div>
 

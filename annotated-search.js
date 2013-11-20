@@ -157,7 +157,7 @@ $(document).ready(function () {
     $('.add-control').bind("click", function () {
         // console.log("Clicked on Add To Canvas");
         var addedId = selectedDoc(); 
-        addedNote = activeNotes.filter(function(n){return n.id == addedId})
+        addedNote = activeNotes().filter(function(n){return n.id == addedId})
         if(!addedNote.length){
           doc = _.findWhere(questions, {id: addedId.toString()} )
           newNote = docNote(doc.id,doc.title,doc.body)
@@ -169,6 +169,18 @@ $(document).ready(function () {
 
     noteListViewModel = function(inputNoteList){
       this.noteList = inputNoteList;
+
+      this.editNote = function (note) {
+        // console.log(this)
+        var currentDoc = note.id;
+        activeNotes()
+          .filter(function(d){return d.id == editingId;})[0]
+          .text = editable.innerHTML;
+        editable.innerHTML = activeNotes()
+          .filter(function(d){return d.id == currentDoc;})[0]
+          .text
+        editingId = currentDoc;
+      }
     }
 
     ko.applyBindings(new noteListViewModel(activeNotes),$('#menu')[0]);
