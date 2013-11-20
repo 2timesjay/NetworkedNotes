@@ -92,12 +92,19 @@
           <div id="menu">
             <div><h2>Working Set</h2></div>
             <ul id="working-notes" data-bind="foreach: noteList">
-              <li>
-                <a class="note" href='#' data-bind="text: title, attr: {'id' : id}, event: { click : $parent.editNote}"> </a>
-              </li>
+              <!-- ko if: working -->
+                <li>
+                  <a class="note" href='#' data-bind="text: title, attr: {'id' : id}, event: { click : $parent.editNote}"> </a>
+                </li>
+              <!-- /ko -->
             </ul>
             <div><h2>Archived Set</h2></div>
-            <ul id="archived-notes">
+            <ul id="archived-notes" data-bind="foreach: noteList">
+              <!-- ko ifnot: working -->
+                <li>
+                  <a class="note" href='#' data-bind="text: title, attr: {'id' : id}, event: { click : $parent.editNote}"> </a>
+                </li>
+              <!-- /ko -->
             </ul>
           </div>
 

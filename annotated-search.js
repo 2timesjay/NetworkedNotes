@@ -50,7 +50,7 @@ function docNote(docId,title,text){
   note.title = title;//Title of the note
   note.edges = ko.observableArray([]);//Edges from the note to other notes
   note.text = text;
-  note.working = ko.observable(false);
+  note.working = ko.observable(true);
   return note;
 }
 
@@ -81,7 +81,7 @@ function freeNote(id, title, edges, text, working){
 Notes, doc-view(slightly) and canvas should treat this as primary.
 work closely with this. Notes have observable fields. */
 var activeNotes = ko.observableArray([ 
-  docNote(selectedDoc, "Placeholder", "Placeholder text"),
+  docNote(selectedDoc(), "Placeholder", "Placeholder text"),
   childNote(selectedDoc(), "who", ["what"], "who text", true),
   childNote(selectedDoc(), "what", ["where"], "what text", true),
   childNote(selectedDoc(), "where", [], "where text", true),
@@ -180,6 +180,11 @@ $(document).ready(function () {
           .filter(function(d){return d.id == currentDoc;})[0]
           .text
         editingId = currentDoc;
+      }
+
+      this.notWorking = function (note) {
+        console.log(note)
+        return !note.working()      
       }
     }
 
