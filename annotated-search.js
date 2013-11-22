@@ -167,6 +167,14 @@ $(document).ready(function () {
         }
       });
 
+    $('.add-note-control').bind("click", function () {
+        // console.log("Clicked on Add To Canvas");
+        var addedId = selectedDoc(); 
+        doc = _.findWhere(questions, {id: addedId.toString()} )
+        newNote = childNote(doc.id,doc.title,[],doc.body,true)
+        activeNotes.push(newNote)
+      });
+
     noteListViewModel = function(inputNoteList){
       this.noteList = inputNoteList;
 

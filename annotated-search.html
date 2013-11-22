@@ -29,22 +29,6 @@
       </div>
     </script>
 
-    <script id="note-list-template" type="text/mustache">
-      <div>
-        <div><h2>Working Set</h2></div>
-        <ul id="working-notes">
-          {{#notes}}
-            <li class="note-bullet">
-              <a class="note" id="{{id}}" href="#">{{title}}</a>
-            </li>
-          {{/notes}}
-        </ul>
-        <div><h2>Archived Set</h2></div>
-        <ul id="archived-notes">
-        </ul>
-      </div>
-    </script>
-
     <script>
       $(function() {
         $( "#tabs" ).tabs();
@@ -75,7 +59,8 @@
             <!-- <div class='question-view-container'></div> -->
             <div class='pup'>
               <h1>
-                <input type="button" class="add-control" value="Add to Canvas" />
+                <input type="button" class="add-control" value="Add article to Canvas" />
+                <input type="button" class="add-note-control" value="Add note to Canvas" />
                 <span data-bind="text: displayNote().id"></span> . <span data-bind="text: displayNote().title"></span>
               </h1>
               <div><span data-bind="text: displayNote().body"></span></div>
