@@ -79,6 +79,7 @@
             <ul id="working-notes" data-bind="foreach: noteList">
               <!-- ko if: working -->
                 <li>
+                  <input type="button" id="working-control" value="Remove" data-bind="event: {click: $parent.swapNote}"/>
                   <a class="note" href='#' data-bind="text: title, attr: {'id' : id}, event: { click : $parent.editNote}"> </a>
                 </li>
               <!-- /ko -->
@@ -87,6 +88,7 @@
             <ul id="archived-notes" data-bind="foreach: noteList">
               <!-- ko ifnot: working -->
                 <li>
+                  <input type="button" id="working-control" value="Re-Add" data-bind="event: {click: $parent.swapNote}"/>
                   <a class="note" href='#' data-bind="text: title, attr: {'id' : id}, event: { click : $parent.editNote}"> </a>
                 </li>
               <!-- /ko -->

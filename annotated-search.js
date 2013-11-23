@@ -190,9 +190,8 @@ $(document).ready(function () {
         editingId = currentDoc;
       }
 
-      this.notWorking = function (note) {
-        console.log(note)
-        return !note.working()      
+      this.swapNote = function (note) {
+        note.working(!note.working())      
       }
     }
 
