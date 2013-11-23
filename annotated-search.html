@@ -17,18 +17,6 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.0.0/knockout-min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
-    <script id="question-list-template" type="text/mustache">
-      <div>
-        <ul>
-          {{#questions}}
-            <li data-question-id="{{id}}">
-              <a href="#">{{title}}</a>
-            </li>
-          {{/questions}}
-        </ul>
-      </div>
-    </script>
-
     <script>
       $(function() {
         $( "#tabs" ).tabs();
@@ -52,11 +40,13 @@
           </div>
 
           <div class="questions">
-            <div id='question-list-container'></div>
-            <!--div id='add-control-container'>
-              <input type="button" class="addToCanvas" value="Add to Canvas" />
-            </div-->
-            <!-- <div class='question-view-container'></div> -->
+            <div id='question-list-container' data-bind="foreach: questionList">
+              <ul>
+                <li>
+                  <a href="#" data-bind="text: title, attr: {'id': id}"></a>
+                </li>
+              </ul>
+            </div>
             <div class='pup'>
               <h1>
                 <input type="button" class="add-control" value="Add article to Canvas" />
@@ -110,7 +100,6 @@
 
           <div class='pup'>
             <h1>
-              <input type="button" class="add-control" value="Add to Canvas" />
               <span data-bind="text: displayNote().id"></span> . <span data-bind="text: displayNote().title"></span>
             </h1>
             <div><span data-bind="text: displayNote().body"></span></div>

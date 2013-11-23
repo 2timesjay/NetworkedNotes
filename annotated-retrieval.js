@@ -1,4 +1,9 @@
 var selectedQuestion = -1
+var questionList = ko.observableArray([])
+
+questionListModel = function(qList) {
+  //selected is selectedDoc, a ko.observable
+};
 
 /** lunr index, simple client-side searching */
 var idx= lunr(function () {
@@ -42,15 +47,6 @@ $(document).ready(function () {
       }
     })
 
-    // Here's my data model
-
-    // MyNote = function(selected){
-    //   this.displayNote = ko.observable(_.findWhere(questions, {id: selected} ) || {id:"",title:"",body:""}); 
-    //   this.changeNote = function(newSelected){
-
-    //   } 
-    // }
-
     //Finds current displayNote based on observable selected; here selectedDoc();
     displayNoteViewModel = function(selected) {
       //selected is selectedDoc, a ko.observable
@@ -87,11 +83,11 @@ $(document).ready(function () {
       });
 
     questions.map(function(question){idx.add(question);})
-    renderQuestionList(questions)
-    // renderQuestionView(questions[0],$('#question-view-container'))
-
+    questionList(questions)
+    ko.applyBindings(questionList,$("#question-list-container")[0])
+ 
     $('a.all').bind('click', function () {
-      renderQuestionList(questions)
+      questionList(questions)
       $('input').val('')
     })
 
@@ -115,7 +111,7 @@ $(document).ready(function () {
         return questions.filter(function (q) { return parseInt(q.id) === parseInt(result.ref, 10) })[0]
       })
       console.log(results)
-      renderQuestionList(results)
+      questionList(results)
     }))
 
     // clicking a list item displays it in the main view
