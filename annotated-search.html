@@ -40,10 +40,10 @@
           </div>
 
           <div class="questions">
-            <div id='question-list-container' data-bind="foreach: questionList">
-              <ul>
+            <div id='question-list-container' >
+              <ul data-bind="foreach: questionList">
                 <li>
-                  <a href="#" data-bind="text: title, attr: {'id': id}"></a>
+                  <a href="#" data-bind="text: title, attr: {'id': id}, event: {click: selectedDoc(id)}"></a>
                 </li>
               </ul>
             </div>
@@ -113,7 +113,7 @@
       </div>
     </div>
   </body>
-  <script src="annotated-retrieval.js" type="text/javascript" charset="utf-8"></script>
   <script src="annotated-notes.js" type="text/javascript" charset="utf-8"></script>
+  <script src="annotated-retrieval.js" type="text/javascript" charset="utf-8"></script>
 <!--   // <script src="annotated-search.js" type="text/javascript" charset="utf-8"></script> -->
 </html>

@@ -20,9 +20,10 @@ relation between document notes and their children:
 
   */
 
+
   /** selectedDoc is a ko.observable
 It is a global variable controlling the doc displayed in .pup */
-var selectedDoc = ko.observable("4464")
+selectedDoc = ko.observable("4464")
 
 //Ripped from Stackoverflow
 function genRandId(){

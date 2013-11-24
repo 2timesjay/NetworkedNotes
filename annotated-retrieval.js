@@ -15,14 +15,6 @@ var idx= lunr(function () {
 $(document).ready(function () {
   var editingId = activeNotes()[0].id;
 
-  // load view templates
-  var questionListTemplate = $("#question-list-template").text()
-  var renderQuestionList = function (qs) {
-    $("#question-list-container")
-      .empty()
-      .append(Mustache.to_html(questionListTemplate, {questions: qs}))
-  }
-
   profile = function (term) {
     console.profile()
     idx.search(term)
@@ -51,6 +43,7 @@ $(document).ready(function () {
     displayNoteViewModel = function(selected) {
       //selected is selectedDoc, a ko.observable
       this.displayNote = ko.computed(function(){
+        console.log("displaying "+selected())
         return _.findWhere(questions, {id: selected().toString()} ) || {id:"",title:"",body:""};
       },this);
     };
@@ -110,21 +103,8 @@ $(document).ready(function () {
       var results = idx.search(query).map(function (result) {
         return questions.filter(function (q) { return parseInt(q.id) === parseInt(result.ref, 10) })[0]
       })
-      console.log(results)
+      // console.log(results)
       questionList(results)
     }))
-
-    // clicking a list item displays it in the main view
-    $("#question-list-container").delegate('li', 'click', function () {
-      var li = $(this)
-      var id = li.data('question-id')
-      selectedDoc(id);
-
-      selectedQuestion = questions.filter(function (question) {
-        return (question.id == id)
-      })[0]
-      // renderQuestionView(selectedQuestion)
-      // console.log(selectedQuestion.id)
-    })
   })
 })
