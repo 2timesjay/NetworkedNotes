@@ -70,9 +70,15 @@ $(document).ready(function () {
     $('.add-note-control').bind("click", function () {
         // console.log("Clicked on Add To Canvas");
         var addedId = selectedDoc(); 
-        doc = _.findWhere(questions, {id: addedId.toString()} )
-        newNote = childNote(doc.id,doc.title,[],doc.body,true)
+        addedNote = activeNotes().filter(function(n){return n.id == addedId})
+        parentDoc = _.findWhere(questions, {id: addedId.toString()} )
+        if(!addedNote.length){
+          newNote = docNote(parentDoc.id,parentDoc.title,parentDoc.body)
+          activeNotes.push(newNote)
+        }
+        newNote = childNote(parentDoc.id,parentDoc.title,[],parentDoc.body,true)
         activeNotes.push(newNote)
+        _.findWhere(activeNotes(),{id: parentDoc.id}).edges.push(newNote.id)
       });
 
     questions.map(function(question){idx.add(question);})
