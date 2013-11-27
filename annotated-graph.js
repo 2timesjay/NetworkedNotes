@@ -155,7 +155,7 @@ var updateGraph = function(initialization){
     .filter(function(note){return !(note.id in indexer)})
   newNotes 
     .forEach(addNode);
-  console.log("newNotes = "+workingNotes.map(function(n){return n.title()}))
+  // console.log("newNotes = "+workingNotes.map(function(n){return n.title()}))
 
   //Re-add old nodes
   var readdedNotes =  workingNotes
@@ -164,7 +164,7 @@ var updateGraph = function(initialization){
         return n.id == note.id
       }).length == 0)
     });
-  console.log("readdedNotes = "+readdedNotes.map(function(n){return n.title()}))
+  // console.log("readdedNotes = "+readdedNotes.map(function(n){return n.title()}))
   
   readdedNotes.forEach(addNode);    
 
@@ -263,7 +263,7 @@ var selectNode = function(node){
   // if(node == null){selected_node = null; return;}
   selected_node = node;
   circle.selectAll('circle')
-     .style('stroke', function(d) { return (d === selected_node)? "#000" : d3.rgb(colors(indexer[0])).darker().toString(); })
+     .style('stroke', function(d) { return (d === selected_node)? "#202020" : d3.rgb(colors(indexer[0])).darker().toString(); })
 }
 
 var dblclickNode = function(node){
@@ -284,6 +284,7 @@ function resetMouseVars() {
   mousedown_edge = null;
 }
 
+
 /**
  * updateCanvas is an update loop that need 
  * only run on model updates.
@@ -300,8 +301,15 @@ function updateCanvas(initialization){
     .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; });
 
   path.attr('class','link')
-     .style('stroke-width', 5)
-    .style('stroke', function(d){return d3.rgb(colors(d.line));});
+    .style('stroke-width', 5)
+    .style('stroke', function(d){
+      lineColor = d3.rgb(colors(d.line));
+      edgeColor = "#202020";
+      if(!isChildOf(d.target,d.source)){
+        edgeColor = lineColor 
+      }
+      return edgeColor;
+    });
 
   // add new links
   path.enter().append('svg:path')
@@ -309,7 +317,20 @@ function updateCanvas(initialization){
     .style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
     .style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; })
     .style('stroke-width', 5)
-    .style('stroke', function(d){return d3.rgb(colors(d.line));})
+    .style('stroke', function(d){
+      lineColor = d3.rgb(colors(d.line));
+      edgeColor = "#202020";
+      try{//Weird delay in index-to-node conversion; should make it automatic in future
+        if(!isChildOf(d.target,d.source)){
+          edgeColor = lineColor 
+        }
+      }
+      catch(e){
+        if(!isChildOf(graph.nodes[d.target],graph.nodes[d.source])){
+          edgeColor = lineColor 
+        }
+      }
+      return edgeColor;})
     .on('mousedown', function(d) {
       if(d3.event.ctrlKey) return;
 

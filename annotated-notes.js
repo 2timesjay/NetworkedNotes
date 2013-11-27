@@ -70,6 +70,11 @@ function freeNote(id, title, edges, text, working){
   return note;
 }
 
+//Input notes, c is child of p, return true
+function isChildOf(c,p){
+  return c.id.indexOf(p.id) !== -1;
+}
+
 /** activeNotes is the primary data location, or data model.
 Notes, doc-view(slightly) and canvas should treat this as primary.
 work closely with this. Notes have observable fields. */
