@@ -70,6 +70,11 @@ text.id {
   border:1px solid white;
 }
 
+#graphic {
+      margin : 50px;
+      float: left;
+}
+
 /*#pup {
   position:absolute;
   z-index:200;

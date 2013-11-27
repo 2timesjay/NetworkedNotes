@@ -43,7 +43,7 @@ $(document).ready(function () {
     displayNoteViewModel = function(selected) {
       //selected is selectedDoc, a ko.observable
       this.displayNote = ko.computed(function(){
-        console.log("displaying "+selected())
+        // console.log("displaying "+selected())
         return _.findWhere(questions, {id: selected().toString()} ) || {id:"",title:"",body:""};
       },this);
     };
@@ -62,9 +62,13 @@ $(document).ready(function () {
           doc = _.findWhere(questions, {id: addedId.toString()} )
           newNote = docNote(doc.id,doc.title,doc.body)
           activeNotes.push(newNote)
+          activeNotes.sort(function(left, right) { 
+            return left.id == right.id ? 
+            0 : (left.id < right.id ? -1 : 1) })
         }else{
           addedNote[0].working(true);
         }
+        updateCanvas();
       });
 
     $('.add-note-control').bind("click", function () {
@@ -76,9 +80,13 @@ $(document).ready(function () {
           newNote = docNote(parentDoc.id,parentDoc.title,parentDoc.body)
           activeNotes.push(newNote)
         }
-        newNote = childNote(parentDoc.id,parentDoc.title,[],parentDoc.body,true)
+        newNote = childNote(parentDoc.id,"Note on "+parentDoc.title,[],parentDoc.body,true)
         activeNotes.push(newNote)
+        activeNotes.sort(function(left, right) { 
+          return left.id == right.id ? 
+          0 : (left.id < right.id ? -1 : 1) })
         _.findWhere(activeNotes(),{id: parentDoc.id}).edges.push(newNote.id)
+        updateCanvas();
       });
 
     questions.map(function(question){idx.add(question);})

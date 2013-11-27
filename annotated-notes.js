@@ -40,7 +40,7 @@ function genRandId(){
 function docNote(docId,title,text){
   var note = {}
   note.id = docId;//Id of the note: docId + a random string
-  note.title = title;//Title of the note
+  note.title = ko.observable(title);//Title of the note
   note.edges = ko.observableArray([]);//Edges from the note to other notes
   note.text = text;
   note.working = ko.observable(true);
@@ -82,6 +82,21 @@ var activeNotes = ko.observableArray([
   childNote(selectedDoc(), "how", ["who"], "how text", false)
 ]);
 
+activeNotes().forEach(function(d){
+  // console.log("original: "+d.edges());
+  idEdges = d.edges.removeAll().map(function(e){
+    return _.findWhere(activeNotes().map(function(n){
+      return {title:n.title(),id:n.id};
+    }),{'title': e}).id;
+  });
+  // console.log("IDified: "+idEdges);
+  d.edges.push.apply(d.edges,idEdges);
+});
+
+var printEdges =function(){
+  console.log(_.pluck(activeNotes(),'edges').map(function(e){return e()}))
+}
+
 //Save and load activeNotes
 var saveAN = function(){
   localStorage.setItem('active-notes', JSON.stringify(activeNotes));}
@@ -107,8 +122,11 @@ $(document).ready(function () {
 	  }
 
 	  this.swapNote = function (note) {
-	    note.working(!note.working())      
+	    note.working(!note.working())    
+      updateCanvas()  
 	  }
+
+    // this.upCanv = ko.computed(function(){updateCanvas();});
 	}
 
   ko.applyBindings(new noteListViewModel(activeNotes),$('#menu')[0]);
