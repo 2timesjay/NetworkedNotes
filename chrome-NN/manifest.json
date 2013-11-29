@@ -5,6 +5,18 @@
   "description": "This extension provides a simple annotation box",
   "version": "1.0",
 
+  "content_scripts": [
+    {
+      "matches": ["https://www.google.com/*"],
+      "js": ["content_script.js"]
+    }
+  ],
+
+  "background": {
+    "page": "background.html",
+    "persistent": true
+  },
+
   "browser_action": {
     "default_icon": "icon.png",
     "default_popup": "popup.html"
